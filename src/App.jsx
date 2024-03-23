@@ -3,6 +3,11 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { power2 } from './helpers'
+import styled from 'styled-components'
+
+const Title = styled.h1`
+  color: red;
+`
 
 function App() {
   const [count, setCount] = useState(0)
@@ -17,7 +22,7 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1>Vite + React</h1>
+      <Title>Vite + React</Title>
       <div className="card">
         <button onClick={() => setCount(count => count + 1)}>count is {count}</button>
         <div>count^2 is {power2(count)}</div>
