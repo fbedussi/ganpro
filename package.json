@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "vite",
+    "type-check": "tsc --noEmit",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "test": "jest",
@@ -13,9 +14,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.2.3",
     "cypress": "^13.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-redux": "^9.1.0",
     "styled-components": "^6.1.8"
   },
   "devDependencies": {
@@ -25,6 +28,7 @@
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.2",
     "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^7.3.1",
@@ -39,6 +43,7 @@
     "jest-svg-transformer": "^1.0.0",
     "prettier": "3.2.5",
     "react-test-renderer": "^18.2.0",
+    "typescript": "^5.4.4",
     "vite": "^5.1.6"
   },
   "jest": {
