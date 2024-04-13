@@ -36,18 +36,13 @@ export const queryIndexedDb = (entityName: string) => {
       }
   >
 
-  function queryFn<T extends { id: IDBValidKey }>(query: IDBValidKey): FetchBaseQueryResult<T>
-  function queryFn<T extends { id: IDBValidKey }>(
-    query: IDBValidKey,
-    operation: 'read',
-  ): FetchBaseQueryResult<T>
-  function queryFn(query: IDBValidKey, operation: 'delete'): FetchBaseQueryResult<boolean>
-  function queryFn<T>(query: T, operation: 'create'): FetchBaseQueryResult<IDBValidKey>
-  function queryFn<T extends { id: IDBValidKey }>(
-    query: T,
-    operation: 'update',
-  ): FetchBaseQueryResult<T>
-  function queryFn<T>(query: any, operation = 'read'): FetchBaseQueryResult<any> {
+  function queryFn({
+    query,
+    operation = 'read',
+  }: {
+    query: any
+    operation?: 'create' | 'read' | 'readAll' | 'update' | 'delete'
+  }): FetchBaseQueryResult<any> {
     return db
       .then(
         db =>
@@ -67,7 +62,15 @@ export const queryIndexedDb = (entityName: string) => {
               case 'read': {
                 const request = objectStore.get(query)
                 request.onsuccess = () => {
-                  res(request.result as T)
+                  res(request.result)
+                }
+                break
+              }
+
+              case 'readAll': {
+                const request = objectStore.getAll()
+                request.onsuccess = () => {
+                  res(request.result)
                 }
                 break
               }

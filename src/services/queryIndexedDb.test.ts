@@ -31,7 +31,7 @@ describe('queryIndexedDb', () => {
 
   it('returns a query function that takes a query and returns a promise', () => {
     const queryFn = queryIndexedDb('projects')
-    expect(queryFn(1)).toEqual(expect.any(Promise))
+    expect(queryFn({ query: 1 })).toEqual(expect.any(Promise))
   })
 
   describe('CRUD', () => {
@@ -41,7 +41,7 @@ describe('queryIndexedDb', () => {
     describe('create an entity', () => {
       it('returns the new entity id', async () => {
         const queryFn = queryIndexedDb('projects')
-        const result = await queryFn(fakeProject, 'create')
+        const result = await queryFn({ query: fakeProject, operation: 'create' })
         id = result.data
         expect(id).toEqual(expect.any(Number))
       })
@@ -50,15 +50,23 @@ describe('queryIndexedDb', () => {
     describe('read an entity', () => {
       it('returns the entity', async () => {
         const queryFn = queryIndexedDb('projects')
-        const { data } = await queryFn(id!)
+        const { data } = await queryFn({ query: id! })
         expect(data).toEqual({ ...fakeProject, id })
+      })
+    })
+
+    describe('read all the entities', () => {
+      it('returns all the entities', async () => {
+        const queryFn = queryIndexedDb('projects')
+        const { data } = await queryFn({ operation: 'readAll' })
+        expect(data).toEqual([{ ...fakeProject, id }])
       })
     })
 
     describe('update an entity', () => {
       it('returns the updated entity', async () => {
         const queryFn = queryIndexedDb('projects')
-        const { data } = await queryFn({ id: id!, name: 'baz' }, 'update')
+        const { data } = await queryFn({ query: { id: id!, name: 'baz' }, operation: 'update' })
         expect(data).toEqual({ name: 'baz', id })
       })
     })
@@ -66,13 +74,13 @@ describe('queryIndexedDb', () => {
     describe('delete an entity', () => {
       it('returns true', async () => {
         const queryFn = queryIndexedDb('projects')
-        const { data } = await queryFn(id!, 'delete')
+        const { data } = await queryFn({ query: id!, operation: 'delete' })
         expect(data).toEqual(true)
       })
 
       it('deletes the entity', async () => {
         const queryFn = queryIndexedDb('projects')
-        const { data } = await queryFn(id!)
+        const { data } = await queryFn({ query: id! })
         expect(data).toEqual(undefined)
       })
     })
@@ -81,13 +89,13 @@ describe('queryIndexedDb', () => {
   describe('Error handling', () => {
     it('querying a non existing store', async () => {
       const queryFn = queryIndexedDb('foo')
-      const { error } = await queryFn(1)
+      const { error } = await queryFn({ query: 1 })
       expect(error).toMatchSnapshot()
     })
 
     it('Query a bad id', async () => {
       const queryFn = queryIndexedDb('projects')
-      const { error } = await queryFn(undefined as any)
+      const { error } = await queryFn({ query: undefined as any })
       expect(error).toMatchSnapshot()
     })
   })
