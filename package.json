@@ -53,6 +53,9 @@
       "^.+\\.(css|less|scss)$": "identity-obj-proxy"
     },
     "testEnvironment": "./fixJSDOMEnvironment.ts",
+    "setupFiles": [
+      "fake-indexeddb/auto"
+    ],
     "setupFilesAfterEnv": [
       "<rootDir>/setup-tests.js"
     ]

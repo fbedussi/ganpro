@@ -16,7 +16,7 @@ export const projectsApi = createApi({
     getAllProjects: builder.query<Project[], void>({
       query: () => ({
         query: undefined,
-        operation: 'read',
+        operation: 'readAll',
       }),
     }),
 
@@ -29,4 +29,4 @@ export const projectsApi = createApi({
   }),
 })
 
-export const { useGetProjectQuery } = projectsApi
+export const { useGetProjectQuery, useGetAllProjectsQuery, useAddProjectQuery } = projectsApi

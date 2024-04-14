@@ -1,4 +1,3 @@
-import 'fake-indexeddb/auto'
 import { _openDb, queryIndexedDb } from './queryIndexedDb'
 import { IDBFactory } from 'fake-indexeddb'
 
@@ -58,7 +57,7 @@ describe('queryIndexedDb', () => {
     describe('read all the entities', () => {
       it('returns all the entities', async () => {
         const queryFn = queryIndexedDb('projects')
-        const { data } = await queryFn({ operation: 'readAll' })
+        const { data } = await queryFn({ query: undefined, operation: 'readAll' })
         expect(data).toEqual([{ ...fakeProject, id }])
       })
     })
