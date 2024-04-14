@@ -52,7 +52,7 @@
       "^.+\\.svg$": "jest-svg-transformer",
       "^.+\\.(css|less|scss)$": "identity-obj-proxy"
     },
-    "testEnvironment": "./FixJSDOMEnvironment.ts",
+    "testEnvironment": "./fixJSDOMEnvironment.ts",
     "setupFilesAfterEnv": [
       "<rootDir>/setup-tests.js"
     ]
