@@ -1,1 +1,3 @@
-# React + Vite boilerplate
+# Ganpro
+
+Personal gantt graph generator
