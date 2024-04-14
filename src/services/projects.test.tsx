@@ -1,4 +1,3 @@
-import 'fake-indexeddb/auto'
 import { render, screen } from '../test-utils'
 import { useGetProjectQuery } from './projects'
 import { queryIndexedDb } from './queryIndexedDb'
