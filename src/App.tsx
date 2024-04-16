@@ -1,4 +1,4 @@
-import Projects from './pages/projects'
+import Projects from './pages/projects/projects'
 
 function App() {
   return (
