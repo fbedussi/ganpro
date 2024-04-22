@@ -1,4 +1,4 @@
-import { _Projects } from './projects'
+import { _Projects } from './Projects'
 import { render, screen } from '../../test-utils'
 import userEvent from '@testing-library/user-event'
 
@@ -27,7 +27,7 @@ describe('projects page', () => {
     expect(screen.getByText(projects[1].name)).toBeInTheDocument()
   })
 
-  it('displays an new project input', () => {
+  it('displays a new project input', () => {
     render(<_Projects projects={projects} saveNewProject={jest.fn()} />)
     expect(screen.getByTestId('new-project-input')).toBeInTheDocument()
   })
@@ -37,7 +37,7 @@ describe('projects page', () => {
     expect(screen.getByTestId('save-project-btn')).toBeInTheDocument()
   })
 
-  it('the add project button is disable until the new project input is blank', async () => {
+  it('the add project button is disabled until the new project input is blank', async () => {
     const user = userEvent.setup()
     render(<_Projects projects={projects} saveNewProject={jest.fn()} />)
     expect(screen.getByTestId('save-project-btn')).toBeDisabled()
