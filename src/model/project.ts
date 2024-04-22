@@ -1,4 +1,6 @@
+import { Id } from './types'
+
 export type Project = {
-  id: number
+  id: Id
   name: string
 }

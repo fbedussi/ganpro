@@ -2,7 +2,7 @@ const dbName = 'ganpro'
 
 let db: IDBDatabase | undefined = undefined
 
-export const _openDb = async (dbName: string, storeName: string): Promise<IDBDatabase> => {
+export const _openDb = async (dbName: string): Promise<IDBDatabase> => {
   return db
     ? Promise.resolve(db)
     : new Promise((res, rej) => {
@@ -17,13 +17,15 @@ export const _openDb = async (dbName: string, storeName: string): Promise<IDBDat
         request.onupgradeneeded = () => {
           const db = request.result
 
-          db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true })
+          db.createObjectStore('projects', { keyPath: 'id', autoIncrement: true })
+          const tasksStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true })
+          tasksStore.createIndex('projId', 'projId', { unique: false })
         }
       })
 }
 
 export const queryIndexedDb = (entityName: string) => {
-  const db = _openDb(dbName, entityName)
+  const db = _openDb(dbName)
 
   type FetchBaseQueryResult<T> = Promise<
     | {
@@ -68,7 +70,14 @@ export const queryIndexedDb = (entityName: string) => {
               }
 
               case 'readAll': {
-                const request = objectStore.getAll()
+                let request
+                if (query) {
+                  const [indexName, indexValue] = Object.entries(query)[0]
+                  const index = objectStore.index(indexName)
+                  request = index.getAll(indexValue as IDBValidKey)
+                } else {
+                  request = objectStore.getAll(query)
+                }
                 request.onsuccess = () => {
                   res(request.result)
                 }

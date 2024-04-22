@@ -7,7 +7,7 @@ before(async () => {
   const queryFn = queryIndexedDb('projects')
   const allProjects = await queryFn({ operation: 'readAll', query: undefined })
   await Promise.all(
-    allProjects.data.map(project => {
+    allProjects.data?.map(project => {
       queryFn({ query: project.id, operation: 'delete' })
     }),
   )

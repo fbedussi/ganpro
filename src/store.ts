@@ -1,12 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { projectsApi } from './services/projects'
+import { tasksApi } from './services/tasks'
 
 export const store = configureStore({
   reducer: {
     [projectsApi.reducerPath]: projectsApi.reducer,
+    [tasksApi.reducerPath]: tasksApi.reducer,
   },
-  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(projectsApi.middleware),
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware().concat([projectsApi.middleware, tasksApi.middleware]),
 })
 
 // optional, but required for refetchOnFocus/refetchOnReconnect behaviors
