@@ -8,6 +8,7 @@ import NewTaskData from './NewTaskData'
 import { useGetProjectQuery } from '../../services/projects'
 import { Progress } from '../../styleguide/Progress'
 import { useAddTaskMutation, useGetTasksByProjectQuery } from '../../services/tasks'
+import Calendar from './Calendar'
 
 export const _Tasks = ({
   project,
@@ -52,6 +53,8 @@ export const _Tasks = ({
       >
         Add task
       </button>
+
+      <Calendar tasks={tasks} />
 
       <Modal isOpen={isModalOpen} onRequestClose={() => setIsModalOpen(false)}>
         <NewTaskData

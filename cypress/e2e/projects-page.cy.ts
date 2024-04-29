@@ -1,4 +1,5 @@
 import { queryIndexedDb } from '../../src/services/queryIndexedDb'
+import { Project } from '../../src/model'
 
 const proj1 = 'proj1'
 const proj2 = 'proj2'
@@ -7,7 +8,7 @@ before(async () => {
   const queryFn = queryIndexedDb('projects')
   const allProjects = await queryFn({ operation: 'readAll', query: undefined })
   await Promise.all(
-    allProjects.data?.map(project => {
+    allProjects.data?.map((project: Project) => {
       queryFn({ query: project.id, operation: 'delete' })
     }),
   )

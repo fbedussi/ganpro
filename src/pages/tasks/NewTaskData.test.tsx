@@ -62,7 +62,7 @@ describe('NewTaskData', () => {
     expect((screen.getByLabelText(/length/i) as HTMLInputElement).required).toBe(true)
   })
 
-  it.only('saves the task', async () => {
+  it('saves the task', async () => {
     const user = userEvent.setup()
 
     const saveTask = jest.fn()
