@@ -1,16 +1,19 @@
 import { queryIndexedDb } from '../../src/services/queryIndexedDb'
+import { Project, Task } from '../../src/model'
 
 const proj1 = 'proj1'
 let projId: number | undefined
 
 const task1 = 'task1'
 const task2 = 'task2'
+let task1Id: number | undefined
+let task2Id: number | undefined
 
 before(async () => {
   const queryFnProj = queryIndexedDb('projects')
   const allProjects = await queryFnProj({ operation: 'readAll', query: undefined })
   await Promise.all(
-    allProjects.data?.map(project => {
+    allProjects.data?.map((project: Project) => {
       queryFnProj({ query: project.id, operation: 'delete' })
     }),
   )
@@ -19,12 +22,21 @@ before(async () => {
   const queryFnTasks = queryIndexedDb('tasks')
   const allTasks = await queryFnTasks({ operation: 'readAll', query: undefined })
   await Promise.all(
-    allTasks?.data?.map(task => {
+    allTasks?.data?.map((task: Task) => {
       queryFnTasks({ query: task.id, operation: 'delete' })
     }),
   )
-  await queryFnTasks({ query: { name: task1, projId }, operation: 'create' })
-  await queryFnTasks({ query: { name: task2, projId }, operation: 'create' })
+  const task1CreationResult = await queryFnTasks({
+    query: { name: task1, projId, startDate: new Date('2024-04-04') },
+    operation: 'create',
+  })
+  task1Id = task1CreationResult.data
+
+  const task2CreationResult = await queryFnTasks({
+    query: { name: task2, projId, startDate: new Date('2024-05-04') },
+    operation: 'create',
+  })
+  task2Id = task2CreationResult.data
 })
 
 describe('Listing Tasks', () => {
@@ -47,5 +59,17 @@ describe('Add a task to a project', () => {
     cy.get('form').contains('label', 'assignee').find('input').type('foo')
     cy.get('button[type="submit"]').click()
     cy.contains('task3')
+  })
+})
+
+describe('Show the calendar', () => {
+  it('The calendar show the the day of the earlier task', () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.get('[data-testid="calendar"] [data-testid="2024-04-04"]')
+  })
+
+  it('The calendar has a taskbar for every task', () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.get(`[data-testid="calendar"] [data-testid="task-${task1Id}_bar"]`)
   })
 })

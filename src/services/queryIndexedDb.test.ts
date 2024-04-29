@@ -7,16 +7,15 @@ beforeAll(() => {
 })
 
 const DB_NAME = 'dbname'
-const ENTITY_NAME = 'projects'
 
 describe('openDb', () => {
   it('returns a promise that resolves to a db instance', async () => {
-    expect(await _openDb(DB_NAME, ENTITY_NAME)).toBeInstanceOf(IDBDatabase)
+    expect(await _openDb(DB_NAME)).toBeInstanceOf(IDBDatabase)
   })
 
   it('returns the same instance if called multiple times', async () => {
-    const db1 = await _openDb(DB_NAME, ENTITY_NAME)
-    const db2 = await _openDb(DB_NAME, ENTITY_NAME)
+    const db1 = await _openDb(DB_NAME)
+    const db2 = await _openDb(DB_NAME)
     expect(db1).toBe(db2)
   })
 
