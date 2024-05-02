@@ -5,6 +5,7 @@ import 'fake-indexeddb/auto'
 import { Project } from '../../model/project'
 import { _Tasks } from './Tasks'
 import { Task } from '../../model/task'
+import React from 'react'
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = jest.fn(function mock(this: HTMLDialogElement) {

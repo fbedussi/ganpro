@@ -1,3 +1,4 @@
+import React from 'react'
 import { Task } from '../../model'
 import { ONE_DAY, calculateTaskLength, getHolidaysClass } from './helpers'
 

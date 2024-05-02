@@ -1,4 +1,5 @@
 {
+  "include":[ "cypress.d.ts"],
   "compilerOptions": {
     "jsx": "preserve",
     "target": "ESNext",

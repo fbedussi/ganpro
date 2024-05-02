@@ -3,6 +3,7 @@ import { render, screen } from '../../test-utils'
 import userEvent from '@testing-library/user-event'
 
 import 'fake-indexeddb/auto'
+import React from 'react'
 
 describe('projects page', () => {
   const projects = [

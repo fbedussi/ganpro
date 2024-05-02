@@ -1,3 +1,4 @@
+import React from 'react'
 import { render, screen } from '../test-utils'
 import { Select } from './Select'
 

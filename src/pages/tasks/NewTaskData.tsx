@@ -5,6 +5,7 @@ import { Button } from '../../styleguide/Button'
 import { Input } from '../../styleguide/Input'
 import { Select } from '../../styleguide/Select'
 import { getRandomColor } from './helpers'
+import React from 'react'
 
 const Form = styled.form`
   display: grid;

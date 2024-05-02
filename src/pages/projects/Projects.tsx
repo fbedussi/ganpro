@@ -2,6 +2,7 @@ import { ChangeEvent, useState } from 'react'
 import { Project } from '../../model/project'
 import { useAddProjectMutation, useGetAllProjectsQuery } from '../../services/projects'
 import ProjectCard from './ProjectCard'
+import React from 'react'
 
 export const _Projects = ({
   projects,

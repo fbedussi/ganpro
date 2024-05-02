@@ -2,6 +2,7 @@ import userEvent from '@testing-library/user-event'
 import { Task } from '../../model/task'
 import { render, screen } from '../../test-utils'
 import NewTaskData from './NewTaskData'
+import React from 'react'
 
 describe('NewTaskData', () => {
   it('shows the task fields', () => {
