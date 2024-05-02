@@ -20,6 +20,7 @@ describe('calendar', () => {
         length: 1,
         assignee: 'me',
         dependenciesId: [],
+        color: 'red',
       },
       {
         id: 2,
@@ -29,6 +30,7 @@ describe('calendar', () => {
         length: 2,
         assignee: 'me',
         dependenciesId: [],
+        color: 'green',
       },
     ]
 
@@ -47,6 +49,7 @@ describe('calendar', () => {
         length: 1,
         assignee: 'me',
         dependenciesId: [],
+        color: 'red',
       },
     ]
 
@@ -67,6 +70,7 @@ describe('calendar', () => {
         length: 1,
         assignee: 'me',
         dependenciesId: [],
+        color: 'red',
       },
     ]
 
@@ -90,6 +94,7 @@ describe('taskbars', () => {
         length: 1,
         assignee: 'me',
         dependenciesId: [],
+        color: 'red',
       },
       {
         id: 2,
@@ -99,6 +104,7 @@ describe('taskbars', () => {
         length: 1,
         assignee: 'me',
         dependenciesId: [],
+        color: 'green',
       },
     ]
 
@@ -118,6 +124,7 @@ describe('taskbars', () => {
         length: 1,
         assignee: 'me',
         dependenciesId: [],
+        color: 'red',
       },
       {
         id: 2,
@@ -127,6 +134,7 @@ describe('taskbars', () => {
         length: 2,
         assignee: 'me',
         dependenciesId: [],
+        color: 'green',
       },
     ]
 
@@ -146,6 +154,7 @@ describe('taskbars', () => {
         length: 3,
         assignee: 'me',
         dependenciesId: [],
+        color: 'red',
       },
     ]
 

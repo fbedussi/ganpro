@@ -9,6 +9,15 @@ import { useGetProjectQuery } from '../../services/projects'
 import { Progress } from '../../styleguide/Progress'
 import { useAddTaskMutation, useGetTasksByProjectQuery } from '../../services/tasks'
 import Calendar from './Calendar'
+import Header from '../../components/Header'
+import styled from 'styled-components'
+
+const Main = styled.main`
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 1rem;
+  flex: 1;
+`
 
 export const _Tasks = ({
   project,
@@ -25,36 +34,39 @@ export const _Tasks = ({
 
   return (
     <>
-      <h1>
-        <span>{project.name}</span> <span>Tasks</span>
-      </h1>
+      <Header title={`${project.name} tasks`} />
 
-      {tasks.map(task => (
-        <TaskCard key={task.id} task={task} />
-      ))}
-      <label>
-        New task
-        <input
-          type="text"
-          data-testid="new-task-input"
-          value={newTaskName}
-          onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            setDisableAddTaskBtn(!ev.target.value.length)
-            setNewTaskName(ev.target.value)
-          }}
-        />
-      </label>
-      <button
-        data-testid="add-task-btn"
-        disabled={disableAddTaskBtn}
-        onClick={() => {
-          setIsModalOpen(true)
-        }}
-      >
-        Add task
-      </button>
+      <Main className="container">
+        <div>
+          {tasks.map(task => (
+            <TaskCard key={task.id} task={task} />
+          ))}
 
-      <Calendar tasks={tasks} />
+          <label>
+            New task
+            <input
+              type="text"
+              data-testid="new-task-input"
+              value={newTaskName}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                setDisableAddTaskBtn(!ev.target.value.length)
+                setNewTaskName(ev.target.value)
+              }}
+            />
+          </label>
+          <button
+            data-testid="add-task-btn"
+            disabled={disableAddTaskBtn}
+            onClick={() => {
+              setIsModalOpen(true)
+            }}
+          >
+            Add task
+          </button>
+        </div>
+
+        <Calendar tasks={tasks} />
+      </Main>
 
       <Modal isOpen={isModalOpen} onRequestClose={() => setIsModalOpen(false)}>
         <NewTaskData

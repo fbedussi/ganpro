@@ -92,6 +92,7 @@ describe('NewTaskData', () => {
       length: 2,
       assignee: 'foo',
       dependenciesId: [1],
+      color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
     })
   })
 })

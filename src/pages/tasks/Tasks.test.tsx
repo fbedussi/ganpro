@@ -27,6 +27,7 @@ describe('tasks page', () => {
       length: 1,
       assignee: 'me',
       dependenciesId: [],
+      color: 'red',
     },
     {
       id: 2,
@@ -36,6 +37,7 @@ describe('tasks page', () => {
       length: 2,
       assignee: 'me',
       dependenciesId: [],
+      color: 'green',
     },
   ]
 
@@ -46,7 +48,7 @@ describe('tasks page', () => {
 
   it('displays the project name', () => {
     render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
-    expect(screen.getByText(project.name)).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(project.name, 'i'))).toBeInTheDocument()
   })
 
   it('displays the tasks', () => {
@@ -124,5 +126,10 @@ describe('tasks page', () => {
       await user.click(screen.getByRole('button', { name: /save/i }))
       expect(screen.getByTestId('task-details-form')).not.toBeVisible()
     })
+  })
+
+  it('display the calendar', () => {
+    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    expect(screen.getByTestId('calendar')).toBeInTheDocument()
   })
 })

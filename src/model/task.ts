@@ -8,4 +8,5 @@ export type Task = {
   length: number
   assignee: string
   dependenciesId: number[]
+  color: string
 }

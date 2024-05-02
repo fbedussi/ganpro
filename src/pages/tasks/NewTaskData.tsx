@@ -1,8 +1,20 @@
+import styled from 'styled-components'
 import { Task } from '../../model/task'
 import { Id } from '../../model/types'
 import { Button } from '../../styleguide/Button'
 import { Input } from '../../styleguide/Input'
 import { Select } from '../../styleguide/Select'
+import { getRandomColor } from './helpers'
+
+const Form = styled.form`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+`
+
+const Buttons = styled.div`
+  grid-column: 1/3;
+`
 
 const NewTaskData = ({
   taskName,
@@ -16,7 +28,7 @@ const NewTaskData = ({
   saveTask: (task: Omit<Task, 'id'>) => void
 }) => {
   return (
-    <form
+    <Form
       data-testid="task-details-form"
       onSubmit={ev => {
         ev.preventDefault()
@@ -36,6 +48,7 @@ const NewTaskData = ({
             .concat(dependenciesSelect.value)
             .filter(val => val !== '')
             .map(n => Number(n)),
+          color: getRandomColor(),
         })
       }}
     >
@@ -50,8 +63,11 @@ const NewTaskData = ({
           projectTasks.map(({ name, id }) => ({ value: id.toString(), label: name })),
         )}
       />
-      <Button type="submit">save</Button>
-    </form>
+
+      <Buttons>
+        <Button type="submit">save</Button>
+      </Buttons>
+    </Form>
   )
 }
 
