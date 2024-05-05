@@ -1,6 +1,11 @@
 import Holidays from 'date-holidays'
 import { Task } from '../../model'
-import { calculateTaskLength, formatDateForCalHeader, getRandomColor } from './helpers'
+import {
+  calculateTaskLength,
+  formatDateForCalHeader,
+  formatMonthNameForCalHeader,
+  getRandomColor,
+} from './helpers'
 
 const hd = new Holidays()
 hd.init('IT')
@@ -42,6 +47,12 @@ describe('calculateTaskLength', () => {
 describe('formatDateForCalHeader', () => {
   it('returns month and day', () => {
     expect(formatDateForCalHeader('2024-04-10')).toBe('10 apr')
+  })
+})
+
+describe('formatMonthNameForCalHeader', () => {
+  it('returns the month name', () => {
+    expect(formatMonthNameForCalHeader('2024-04')).toBe('aprile')
   })
 })
 

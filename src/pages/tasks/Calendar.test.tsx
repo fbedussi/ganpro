@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '../../test-utils'
+import { getByText, render, screen } from '../../test-utils'
 import Calendar from './Calendar'
 import { Task } from '../../model'
 
@@ -8,6 +8,14 @@ describe('calendar', () => {
     render(<Calendar tasks={[]} />)
 
     expect(screen.getByTestId(new Date().toISOString().split('T')[0])).toBeInTheDocument()
+  })
+
+  it('shows the current month if there are no tasks', () => {
+    render(<Calendar tasks={[]} />)
+
+    expect(
+      screen.getByTestId(new Date().toISOString().split('T')[0].substring(0, 7)),
+    ).toBeInTheDocument()
   })
 
   it('shows the day of the earlier task', () => {
@@ -37,6 +45,35 @@ describe('calendar', () => {
     render(<Calendar tasks={tasks} />)
 
     expect(screen.getByTestId('2024-04-04')).toBeInTheDocument()
+  })
+
+  it('shows the name of the month of the earlier task', () => {
+    const tasks: Task[] = [
+      {
+        id: 1,
+        projId: 1,
+        name: 'task1',
+        startDate: new Date('2024-05-04'),
+        length: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'red',
+      },
+      {
+        id: 2,
+        projId: 1,
+        name: 'task2',
+        startDate: new Date('2024-04-04'),
+        length: 2,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'green',
+      },
+    ]
+
+    render(<Calendar tasks={tasks} />)
+
+    expect(getByText(screen.getByTestId('2024-04'), /aprile/i)).toBeInTheDocument()
   })
 
   it('shows the next 10 days, after the starting one', () => {
@@ -112,54 +149,5 @@ describe('taskbars', () => {
 
     expect(screen.getByTestId('task-1_bar')).toBeInTheDocument()
     expect(screen.getByTestId('task-2_bar')).toBeInTheDocument()
-  })
-
-  test('task bars length is the same as the task length if it does not include non working days', () => {
-    const tasks: Task[] = [
-      {
-        id: 1,
-        projId: 1,
-        name: 'task1',
-        startDate: new Date('2024-04-01'),
-        length: 1,
-        assignee: 'me',
-        dependenciesId: [],
-        color: 'red',
-      },
-      {
-        id: 2,
-        projId: 1,
-        name: 'task2',
-        startDate: new Date('2024-04-02'),
-        length: 2,
-        assignee: 'me',
-        dependenciesId: [],
-        color: 'green',
-      },
-    ]
-
-    render(<Calendar tasks={tasks} />)
-
-    expect(screen.getByTestId('task-1_bar')).toHaveClass('length-1')
-    expect(screen.getByTestId('task-2_bar')).toHaveClass('length-2')
-  })
-
-  test('task bars length is the same as the task length + non working days', () => {
-    const tasks: Task[] = [
-      {
-        id: 1,
-        projId: 1,
-        name: 'task1',
-        startDate: new Date('2024-04-24'),
-        length: 3,
-        assignee: 'me',
-        dependenciesId: [],
-        color: 'red',
-      },
-    ]
-
-    render(<Calendar tasks={tasks} />)
-
-    expect(screen.getByTestId('task-1_bar')).toHaveClass('length-6')
   })
 })

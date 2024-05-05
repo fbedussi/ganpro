@@ -44,6 +44,11 @@ export const formatDateForCalHeader = (dateStr: string, locale = 'it-IT') => {
   return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(date)
 }
 
+export const formatMonthNameForCalHeader = (dateStr: string, locale = 'it-IT') => {
+  const date = new Date(dateStr)
+  return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date)
+}
+
 export const getRandomColor = () => {
   const getRandomColorValue = () => Math.round(Math.random() * 255)
 
