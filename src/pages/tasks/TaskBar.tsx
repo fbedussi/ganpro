@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { ForwardedRef, forwardRef } from 'react'
 import { Task } from '../../model'
 import styled from 'styled-components'
 import { calculateTaskLength } from './helpers'
-import Holidays from 'date-holidays'
+import { HolidaysTypes } from 'date-holidays'
 
 const Wrapper = styled.div`
   height: var(--row-height);
@@ -11,20 +11,25 @@ const Wrapper = styled.div`
   border: solid 2px transparent;
 `
 
-const TaskBar = ({
-  task,
-  taskIndex,
-  hd,
-  firstDay,
-}: {
-  task: Task
-  taskIndex: number
-  firstDay: number
-  hd: Holidays
-}) => {
+const TaskBar = (
+  {
+    task,
+    taskIndex,
+    hd,
+    firstDay,
+  }: {
+    ref: ForwardedRef<HTMLDivElement>
+    task: Task
+    taskIndex: number
+    firstDay: number
+    hd: HolidaysTypes.Holiday[]
+  },
+  ref: ForwardedRef<HTMLDivElement>,
+) => {
   const taskLength = calculateTaskLength(task, hd)
   return (
     <Wrapper
+      ref={ref}
       data-testid={`task-${task.id}_bar`}
       style={{
         backgroundColor: task.color,
@@ -36,4 +41,4 @@ const TaskBar = ({
   )
 }
 
-export default TaskBar
+export default forwardRef(TaskBar)

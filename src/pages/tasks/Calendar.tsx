@@ -1,6 +1,11 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Task } from '../../model'
-import { ONE_DAY, formatMonthNameForCalHeader, getHolidaysClass } from './helpers'
+import {
+  formatMonthNameForCalHeader,
+  getHolidaysClass,
+  getMonthDays,
+  getTasksMonths,
+} from './helpers'
 import styled, { css } from 'styled-components'
 import TaskBar from './TaskBar'
 
@@ -131,24 +136,32 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
 
   const holidays = hd.getHolidays(startDateFull.getFullYear())
 
-  const dates = new Array(11).fill(undefined).map((_, index) => {
-    const date = new Date(startDateFull.getTime() + ONE_DAY * index)
-    const day = date.getDay()
+  const months = getTasksMonths(tasks, holidays).map(month => ({
+    month,
+    days: getMonthDays(month).map(day => {
+      const task = tasks.find(task => task.startDate.toISOString().includes(day))
 
-    const shortDate = date.toISOString().split('T')[0]
+      const date = new Date(day)
+      const dayOfWeek = date.getDay()
+      return {
+        date: day,
+        month,
+        isWeekend: [0, 6].includes(dayOfWeek),
+        isHoliday: holidays.some(holiday => holiday.date.includes(day)),
+        task,
+      }
+    }),
+  }))
 
-    const task = tasks.find(task => task.startDate.toISOString().includes(shortDate))
+  const scrollElRef = useRef<HTMLDivElement>(null)
+  const firstTaskRef = useRef<HTMLDivElement>(null)
 
-    return {
-      date: shortDate,
-      month: shortDate.substring(0, 7),
-      isWeekend: [0, 6].includes(day),
-      isHoliday: holidays.some(holiday => holiday.date.includes(shortDate)),
-      task,
+  useEffect(() => {
+    if (scrollElRef.current && firstTaskRef.current) {
+      const scrollRight = firstTaskRef.current.offsetLeft
+      scrollElRef.current.scrollLeft = scrollRight
     }
-  })
-
-  const months = [...new Set(dates.map(({ month }) => month))]
+  }, [])
 
   return (
     <Container data-testid="calendar">
@@ -158,26 +171,22 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
         ))}
       </TaskList>
 
-      <ScrollContainer>
+      <ScrollContainer ref={scrollElRef}>
         <Graph>
           <Months>
-            {months.map(month => (
+            {months.map(({ month, days }) => (
               <Month key={month} data-testid={month}>
                 <MonthName>{formatMonthNameForCalHeader(month)}</MonthName>
                 <Days>
-                  {dates
-                    .filter(date => date.month === month)
-                    .map(({ date, isWeekend, isHoliday }) => (
-                      <Day
-                        key={date}
-                        data-testid={date}
-                        className={[isWeekend ? 'weekend' : '', isHoliday ? 'holiday' : ''].join(
-                          ' ',
-                        )}
-                      >
-                        {date.substring(8)}
-                      </Day>
-                    ))}
+                  {days.map(({ date, isWeekend, isHoliday }) => (
+                    <Day
+                      key={date}
+                      data-testid={date}
+                      className={[isWeekend ? 'weekend' : '', isHoliday ? 'holiday' : ''].join(' ')}
+                    >
+                      {date.substring(8)}
+                    </Day>
+                  ))}
                 </Days>
               </Month>
             ))}
@@ -186,11 +195,12 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
           <Tasks>
             {tasks.map((task, index) => (
               <TaskBar
+                ref={index === 0 ? firstTaskRef : null}
                 key={task.id}
                 task={task}
                 taskIndex={index}
-                hd={hd}
-                firstDay={Number(dates[0].date.substring(8))}
+                hd={holidays}
+                firstDay={Number(months[0].days[0].date.substring(8))}
               />
             ))}
           </Tasks>

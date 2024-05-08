@@ -1,5 +1,6 @@
 import Holidays, { HolidaysTypes } from 'date-holidays'
-import { Task } from '../../model'
+import { Day, Month, Task } from '../../model'
+import { padNumber } from '../../helpers/utils'
 
 let hd: Holidays | undefined
 
@@ -13,7 +14,7 @@ export const getHolidaysClass = (country: string): Holidays => {
   return hd
 }
 
-export const calculateTaskLength = (task: Task, hd: Holidays) => {
+export const calculateTaskLength = (task: Task, holidays: HolidaysTypes.Holiday[]) => {
   const startWeekDay = task.startDate.getDay()
   const weekends = Math.floor((startWeekDay + (task.length - 1)) / 5)
 
@@ -24,12 +25,11 @@ export const calculateTaskLength = (task: Task, hd: Holidays) => {
   const findFirstNextHolyday = (holidays: HolidaysTypes.Holiday[], startTime: number) =>
     holidays.findIndex(({ start }) => start.getTime() > startTime)
 
-  const holidays = hd.getHolidays()
   const firstHolydayAfterStartTimeIndex = findFirstNextHolyday(holidays, taskStartTime)
   let taskEndTime = taskStartTime + lengthWithHolidays * ONE_DAY
   let index = firstHolydayAfterStartTimeIndex
   let includedHolydays = 0
-  while (holidays[index].end.getTime() < taskEndTime) {
+  while (holidays[index]?.end.getTime() < taskEndTime) {
     includedHolydays++
     taskEndTime += ONE_DAY
     const nextIndex = index + 1
@@ -57,4 +57,82 @@ export const getRandomColor = () => {
   const randomBlue = getRandomColorValue()
   const randomColor = `rgb(${randomRed}, ${randomGreen}, ${randomBlue})`
   return randomColor
+}
+
+export const getTasksStartAndEndDates = (tasks: Task[], hd: HolidaysTypes.Holiday[]) => {
+  const startDate = tasks.length
+    ? tasks.sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0].startDate
+    : undefined
+
+  const endTimestamp = tasks.length
+    ? tasks
+        .map(task =>
+          new Date(
+            task.startDate.getTime() + ONE_DAY * (calculateTaskLength(task, hd) - 1),
+          ).getTime(),
+        )
+        .sort((a, b) => b - a)[0]
+    : undefined
+
+  return [startDate, endTimestamp !== undefined ? new Date(endTimestamp) : undefined]
+}
+
+export const getMonthStart = (input: Date | string) => {
+  const date = new Date(input)
+  const year = date.getFullYear()
+  const month = date.getMonth()
+  const monthStart = `${year}-${padNumber(month + 1)}-01`
+  return monthStart as Day
+}
+
+export const getMonthEnd = (input: Date | string) => {
+  const date = new Date(input)
+  const year = date.getFullYear()
+  const month = date.getMonth()
+  const monthEnd = new Date(Date.UTC(year, month + 1, 0)).toISOString().split('T')[0]
+  return monthEnd as Day
+}
+
+export const getMonthDays = (month: Month) => {
+  const startDay = getMonthStart(month)
+  const endDay = getMonthEnd(month)
+
+  const days = [startDay]
+  let i = 0
+  while (days[i] !== endDay) {
+    const currentDay = days[i]
+    if (!currentDay) {
+      throw new Error('unexpected error')
+    }
+
+    const [year, month, day] = currentDay.split('-')
+    const nextDay = Number(day) + 1
+
+    days.push(`${year}-${month}-${padNumber(nextDay)}`)
+    i++
+  }
+  return days
+}
+
+export const getTasksMonths = (tasks: Task[], hd: HolidaysTypes.Holiday[]) => {
+  const [startDay, endDay] = getTasksStartAndEndDates(tasks, hd)
+
+  const startMonth = (startDay || new Date()).toISOString().substring(0, 7) as Month
+  const endMonth = (endDay || new Date()).toISOString().substring(0, 7) as Month
+
+  const months: Month[] = [startMonth]
+  let i = 0
+  while (months[i] !== endMonth) {
+    const currentMonth = months[i]
+    if (!currentMonth) {
+      throw new Error('unexpected error')
+    }
+    const [year, month] = currentMonth.split('-')
+    const nextMonth = month === '12' ? 1 : Number(month) + 1
+    const nextYear = month === '12' ? Number(year) + 1 : Number(year)
+    months.push(`${nextYear}-${padNumber(nextMonth)}`)
+    i++
+  }
+
+  return months
 }

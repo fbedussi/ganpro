@@ -76,7 +76,7 @@ describe('calendar', () => {
     expect(getByText(screen.getByTestId('2024-04'), /aprile/i)).toBeInTheDocument()
   })
 
-  it('shows the next 10 days, after the starting one', () => {
+  it('shows the full month for every task', () => {
     const tasks: Task[] = [
       {
         id: 1,
@@ -88,12 +88,25 @@ describe('calendar', () => {
         dependenciesId: [],
         color: 'red',
       },
+      {
+        id: 2,
+        projId: 1,
+        name: 'task1',
+        startDate: new Date('2024-05-04'),
+        length: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'red',
+      },
     ]
 
     render(<Calendar tasks={tasks} />)
 
-    for (let day = 4; day <= 14; day++) {
+    for (let day = 1; day <= 30; day++) {
       expect(screen.getByTestId(`2024-04-${day < 10 ? `0${day}` : day}`)).toBeInTheDocument()
+    }
+    for (let day = 1; day <= 31; day++) {
+      expect(screen.getByTestId(`2024-05-${day < 10 ? `0${day}` : day}`)).toBeInTheDocument()
     }
   })
 
@@ -116,7 +129,6 @@ describe('calendar', () => {
     expect(screen.getByTestId('2024-04-25')).toHaveClass('holiday')
     expect(screen.getByTestId('2024-04-27')).toHaveClass('weekend')
     expect(screen.getByTestId('2024-04-28')).toHaveClass('weekend')
-    expect(screen.getByTestId('2024-05-01')).toHaveClass('holiday')
   })
 })
 

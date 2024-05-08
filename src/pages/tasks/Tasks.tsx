@@ -35,7 +35,7 @@ export const _Tasks = ({
     <>
       <Header title={`${project.name} tasks`} />
 
-      <Main>
+      <Main className="container">
         <Calendar tasks={tasks} />
 
         <div>
@@ -89,7 +89,7 @@ const Tasks = () => {
   return !project ? (
     <Progress />
   ) : (
-    <_Tasks project={project} tasks={tasks || []} saveNewTask={saveNewTask} />
+    <_Tasks project={project} tasks={tasks?.slice() || []} saveNewTask={saveNewTask} />
   )
 }
 
