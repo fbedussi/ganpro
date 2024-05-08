@@ -27,13 +27,13 @@ before(async () => {
     }),
   )
   const task1CreationResult = await queryFnTasks({
-    query: { name: task1, projId, startDate: new Date('2024-04-04') },
+    query: { name: task1, projId, startDate: new Date('2024-04-04'), length: 1, color: 'red' },
     operation: 'create',
   })
   task1Id = task1CreationResult.data
 
   const task2CreationResult = await queryFnTasks({
-    query: { name: task2, projId, startDate: new Date('2024-05-04') },
+    query: { name: task2, projId, startDate: new Date('2024-04-05'), length: 2, color: 'green' },
     operation: 'create',
   })
   task2Id = task2CreationResult.data
@@ -54,8 +54,8 @@ describe('Add a task to a project', () => {
     cy.get('[data-testid="new-task-input"]').type('task3')
     cy.get('[data-testid="add-task-btn"]').click()
     cy.get('dialog').should('be.visible')
-    cy.get('form').contains('label', 'start date').find('input').type('2024-04-04')
-    cy.get('form').contains('label', 'length').find('input').type('2')
+    cy.get('form').contains('label', 'start date').find('input').type('2024-04-08')
+    cy.get('form').contains('label', 'length').find('input').type('3')
     cy.get('form').contains('label', 'assignee').find('input').type('foo')
     cy.get('button[type="submit"]').click()
     cy.contains('task3')

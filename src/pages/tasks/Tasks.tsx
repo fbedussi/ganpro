@@ -1,8 +1,7 @@
+import React, { ChangeEvent, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Task } from '../../model/task'
 import { Project } from '../../model/project'
-import TaskCard from './TaskCard'
-import { ChangeEvent, useState } from 'react'
 import Modal from '../../styleguide/Modal'
 import NewTaskData from './NewTaskData'
 import { useGetProjectQuery } from '../../services/projects'
@@ -11,11 +10,10 @@ import { useAddTaskMutation, useGetTasksByProjectQuery } from '../../services/ta
 import Calendar from './Calendar'
 import Header from '../../components/Header'
 import styled from 'styled-components'
-import React from 'react'
 
 const Main = styled.main`
-  display: grid;
-  grid-template-columns: 1fr 3fr;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
   flex: 1;
 `
@@ -38,11 +36,9 @@ export const _Tasks = ({
       <Header title={`${project.name} tasks`} />
 
       <Main className="container">
-        <div>
-          {tasks.map(task => (
-            <TaskCard key={task.id} task={task} />
-          ))}
+        <Calendar tasks={tasks} />
 
+        <div>
           <label>
             New task
             <input
@@ -65,8 +61,6 @@ export const _Tasks = ({
             Add task
           </button>
         </div>
-
-        <Calendar tasks={tasks} />
       </Main>
 
       <Modal isOpen={isModalOpen} onRequestClose={() => setIsModalOpen(false)}>
@@ -95,7 +89,7 @@ const Tasks = () => {
   return !project ? (
     <Progress />
   ) : (
-    <_Tasks project={project} tasks={tasks || []} saveNewTask={saveNewTask} />
+    <_Tasks project={project} tasks={tasks?.slice() || []} saveNewTask={saveNewTask} />
   )
 }
 
