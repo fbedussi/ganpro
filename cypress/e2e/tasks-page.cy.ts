@@ -7,7 +7,6 @@ let projId: number | undefined
 const task1 = 'task1'
 const task2 = 'task2'
 let task1Id: number | undefined
-let task2Id: number | undefined
 
 before(async () => {
   const queryFnProj = queryIndexedDb('projects')
@@ -27,16 +26,33 @@ before(async () => {
     }),
   )
   const task1CreationResult = await queryFnTasks({
-    query: { name: task1, projId, startDate: new Date('2024-04-04'), length: 1, color: 'red' },
+    query: {
+      name: task1,
+      projId,
+      startDate: new Date('2024-04-04'),
+      endDate: new Date('2024-04-04'),
+      length: 1,
+      effectiveLength: 1,
+      dependenciesId: [],
+      color: 'red',
+    },
     operation: 'create',
   })
   task1Id = task1CreationResult.data
 
-  const task2CreationResult = await queryFnTasks({
-    query: { name: task2, projId, startDate: new Date('2024-04-05'), length: 2, color: 'green' },
+  await queryFnTasks({
+    query: {
+      name: task2,
+      projId,
+      startDate: new Date('2024-04-05'),
+      endDate: new Date('2024-04-08'),
+      length: 2,
+      effectiveLength: 4,
+      dependenciesId: [task1Id],
+      color: 'green',
+    },
     operation: 'create',
   })
-  task2Id = task2CreationResult.data
 })
 
 describe('Listing Tasks', () => {

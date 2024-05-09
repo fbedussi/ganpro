@@ -1,5 +1,5 @@
 import Holidays, { HolidaysTypes } from 'date-holidays'
-import { Day, Month, Task } from '../../model'
+import { Day, Dependency, Month, Task } from '../../model'
 import { padNumber } from '../../helpers/utils'
 
 let hd: Holidays | undefined
@@ -14,7 +14,10 @@ export const getHolidaysClass = (country: string): Holidays => {
   return hd
 }
 
-export const calculateTaskLength = (task: Task, holidays: HolidaysTypes.Holiday[]) => {
+export const calculateTaskLength = (
+  task: Pick<Task, 'startDate' | 'length'>,
+  holidays: HolidaysTypes.Holiday[],
+) => {
   const startWeekDay = task.startDate.getDay()
   const weekends = Math.floor((startWeekDay + (task.length - 1)) / 5)
 
@@ -135,4 +138,40 @@ export const getTasksMonths = (tasks: Task[], hd: HolidaysTypes.Holiday[]) => {
   }
 
   return months
+}
+
+export const getDependencies = (tasks: Task[]): Dependency[] => {
+  const dependencies = tasks.flatMap((task, index) =>
+    task.dependenciesId.map(dependencyId => {
+      const fromIndex = tasks.findIndex(task => task.id === dependencyId)
+      const dependency: Dependency = {
+        from: {
+          id: dependencyId,
+          index: fromIndex,
+          endDate: tasks[fromIndex].endDate.toISOString().split('T')[0] as Day,
+        },
+        to: {
+          id: task.id,
+          index,
+          startDate: task.startDate.toISOString().split('T')[0] as Day,
+        },
+      }
+      return dependency
+    }),
+  )
+
+  return dependencies
+}
+
+export const calculateDependencyStyle = (dependency: Dependency, days: Day[]) => {
+  const gridColumnStart = days.indexOf(dependency.from.endDate) + 2
+  const gridColumnEnd = days.indexOf(dependency.to.startDate) + 1
+
+  return {
+    gridRowStart: dependency.from.index + 1,
+    gridRowEnd: dependency.to.index + 2,
+    gridColumnStart,
+    gridColumnEnd,
+    width: gridColumnStart === gridColumnEnd ? 0 : undefined,
+  }
 }

@@ -81,7 +81,7 @@ describe('NewTaskData', () => {
         saveTask={saveTask}
       />,
     )
-    await user.type(screen.getByLabelText(/start date/i), '2024-04-04')
+    await user.type(screen.getByLabelText(/start date/i), '2024-04-03')
     await user.type(screen.getByLabelText(/length/i), '2')
     await user.type(screen.getByLabelText(/assignee/i), 'foo')
     await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '1')
@@ -89,8 +89,46 @@ describe('NewTaskData', () => {
     expect(saveTask).toHaveBeenCalledWith({
       name: 'task1',
       projId: 1,
-      startDate: new Date('2024-04-04'),
+      startDate: new Date('2024-04-03'),
+      endDate: new Date('2024-04-04'),
       length: 2,
+      effectiveLength: 2,
+      assignee: 'foo',
+      dependenciesId: [1],
+      color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
+    })
+  })
+
+  it('saves the task, calculating the end date considering weekends and holidays', async () => {
+    const user = userEvent.setup()
+
+    const saveTask = jest.fn()
+    render(
+      <NewTaskData
+        taskName="task1"
+        projId={1}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+          } as Task,
+        ]}
+        saveTask={saveTask}
+      />,
+    )
+    await user.type(screen.getByLabelText(/start date/i), '2024-04-24')
+    await user.type(screen.getByLabelText(/length/i), '4')
+    await user.type(screen.getByLabelText(/assignee/i), 'foo')
+    await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '1')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    expect(saveTask).toHaveBeenCalledWith({
+      name: 'task1',
+      projId: 1,
+      startDate: new Date('2024-04-24'),
+      endDate: new Date('2024-04-30'),
+      length: 4,
+      effectiveLength: 7,
       assignee: 'foo',
       dependenciesId: [1],
       color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
