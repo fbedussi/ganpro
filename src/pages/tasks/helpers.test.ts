@@ -1,12 +1,13 @@
 import Holidays from 'date-holidays'
-import { Task } from '../../model'
+import { Day, Dependency, Task } from '../../model'
 import {
+  calculateDependencyStyle,
   calculateTaskLength,
   formatDateForCalHeader,
   formatMonthNameForCalHeader,
+  getDependencies,
   getMonthDays,
   getMonthEnd,
-  // getMonthRange,
   getMonthStart,
   getRandomColor,
   getTasksMonths,
@@ -198,19 +199,6 @@ describe('getMonthEnd', () => {
   })
 })
 
-// describe('getMonthRange', () => {
-//   it('returns the start and and month', () => {
-//     expect(getMonthRange([new Date('2024-03-01'), new Date('2024-05-01')])).toEqual([
-//       '2024-03',
-//       '2024-05',
-//     ])
-//   })
-
-//   it('accepts also strings', () => {
-//     expect(getMonthRange(['2024-03-01', '2024-05-01'])).toEqual(['2024-03', '2024-05'])
-//   })
-// })
-
 describe('getMonthDays', () => {
   it('returns the days in the month', () => {
     expect(getMonthDays('2024-01-01')).toEqual([
@@ -287,5 +275,194 @@ describe('getTasksMonths', () => {
       '2025-05',
       '2025-06',
     ])
+  })
+})
+
+describe('getDependencies', () => {
+  it('extract dependencies from tasks/1', () => {
+    const tasks: Task[] = [
+      {
+        id: 1,
+        projId: 1,
+        name: 'task1',
+        startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-04'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'red',
+      },
+      {
+        id: 2,
+        projId: 1,
+        name: 'task2',
+        startDate: new Date('2024-04-05'),
+        endDate: new Date('2024-04-05'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [1],
+        color: 'green',
+      },
+    ]
+
+    expect(getDependencies(tasks)).toEqual([
+      {
+        from: {
+          id: 1,
+          index: 0,
+          endDate: '2024-04-04',
+        },
+        to: {
+          id: 2,
+          index: 1,
+          startDate: '2024-04-05',
+        },
+      },
+    ])
+  })
+
+  it('extract dependencies from tasks/2', () => {
+    const tasks: Task[] = [
+      {
+        id: 1,
+        projId: 1,
+        name: 'task1',
+        startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-04'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'red',
+      },
+      {
+        id: 2,
+        projId: 1,
+        name: 'task2',
+        startDate: new Date('2024-04-05'),
+        endDate: new Date('2024-04-05'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [1],
+        color: 'green',
+      },
+      {
+        id: 3,
+        projId: 1,
+        name: 'task2',
+        startDate: new Date('2024-04-07'),
+        endDate: new Date('2024-04-07'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [1, 2],
+        color: 'green',
+      },
+    ]
+
+    expect(getDependencies(tasks)).toEqual([
+      {
+        from: {
+          id: 1,
+          index: 0,
+          endDate: '2024-04-04',
+        },
+        to: {
+          id: 2,
+          index: 1,
+          startDate: '2024-04-05',
+        },
+      },
+      {
+        from: {
+          id: 1,
+          index: 0,
+          endDate: '2024-04-04',
+        },
+        to: {
+          id: 3,
+          index: 2,
+          startDate: '2024-04-07',
+        },
+      },
+      {
+        from: {
+          id: 2,
+          index: 1,
+          endDate: '2024-04-05',
+        },
+        to: {
+          id: 3,
+          index: 2,
+          startDate: '2024-04-07',
+        },
+      },
+    ])
+  })
+})
+
+describe('calculateDependencyStyle', () => {
+  it('returns the dependency style', () => {
+    const dependency: Dependency = {
+      from: {
+        id: 2,
+        index: 0,
+        endDate: '2024-04-05',
+      },
+      to: {
+        id: 3,
+        index: 1,
+        startDate: '2024-04-07',
+      },
+    }
+    const days = [
+      '2024-04-01',
+      '2024-04-02',
+      '2024-04-03',
+      '2024-04-04',
+      '2024-04-05',
+      '2024-04-06',
+      '2024-04-07',
+    ] as Day[]
+    expect(calculateDependencyStyle(dependency, days)).toEqual({
+      gridRowStart: 1,
+      gridRowEnd: 3,
+      gridColumnStart: 6,
+      gridColumnEnd: 7,
+    })
+  })
+
+  it('returns width: 0 when col start and col end are the same', () => {
+    const dependency: Dependency = {
+      from: {
+        id: 2,
+        index: 0,
+        endDate: '2024-04-05',
+      },
+      to: {
+        id: 3,
+        index: 1,
+        startDate: '2024-04-06',
+      },
+    }
+    const days = [
+      '2024-04-01',
+      '2024-04-02',
+      '2024-04-03',
+      '2024-04-04',
+      '2024-04-05',
+      '2024-04-06',
+      '2024-04-07',
+    ] as Day[]
+    expect(calculateDependencyStyle(dependency, days)).toEqual({
+      gridRowStart: 1,
+      gridRowEnd: 3,
+      gridColumnStart: 6,
+      gridColumnEnd: 6,
+      width: 0,
+    })
   })
 })

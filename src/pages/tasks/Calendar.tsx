@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import { Task } from '../../model'
 import {
+  calculateDependencyStyle,
   formatMonthNameForCalHeader,
+  getDependencies,
   getHolidaysClass,
   getMonthDays,
   getTasksMonths,
@@ -123,11 +125,39 @@ const Tasks = styled.div`
   ${overlayLayers}
 `
 
-const hd = getHolidaysClass('IT')
+const Dependencies = styled.div`
+  ${overlayLayers}
+`
 
-export const _calculateTaskLength = (task: Task) => {
-  return task.length
-}
+const Dependency = styled.div`
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc(var(--row-height) / 2);
+    left: calc(-0.5rem + var(--connector-width));
+    width: calc(50% + 0.5rem);
+    height: calc((100% - var(--row-height)) / 2);
+    border-top: solid var(--connector-width) var(--connector-color);
+    border-right: solid var(--connector-width) var(--connector-color);
+    border-radius: 0 5px 0 0;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: calc(var(--row-height) / 2);
+    left: 50%;
+    height: calc((100% - var(--row-height)) / 2);
+    width: calc(50% + 0.5rem);
+    border-left: solid var(--connector-width) var(--connector-color);
+    border-bottom: solid var(--connector-width) var(--connector-color);
+    border-radius: 0 0 0 5px;
+  }
+`
+
+const hd = getHolidaysClass('IT')
 
 export const Calendar = ({ tasks }: { tasks: Task[] }) => {
   const startDateFull = tasks.length
@@ -153,6 +183,8 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
     }),
   }))
 
+  const dates = months.flatMap(({ days }) => days.map(({ date }) => date))
+
   const scrollElRef = useRef<HTMLDivElement>(null)
   const firstTaskRef = useRef<HTMLDivElement>(null)
 
@@ -162,6 +194,8 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
       scrollElRef.current.scrollLeft = scrollRight
     }
   }, [])
+
+  const dependencies = getDependencies(tasks)
 
   return (
     <Container data-testid="calendar">
@@ -199,11 +233,23 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
                 key={task.id}
                 task={task}
                 taskIndex={index}
-                hd={holidays}
                 firstDay={Number(months[0].days[0].date.substring(8))}
               />
             ))}
           </Tasks>
+
+          <Dependencies>
+            {dependencies.map(dependency => {
+              const key = `dependency-${dependency.from.id}->${dependency.to.id}`
+              return (
+                <Dependency
+                  key={key}
+                  data-testid={key}
+                  style={calculateDependencyStyle(dependency, dates)}
+                ></Dependency>
+              )
+            })}
+          </Dependencies>
         </Graph>
       </ScrollContainer>
     </Container>

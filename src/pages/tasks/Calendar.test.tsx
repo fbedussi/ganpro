@@ -25,7 +25,9 @@ describe('calendar', () => {
         projId: 1,
         name: 'task1',
         startDate: new Date('2024-05-04'),
+        endDate: new Date('2024-05-04'),
         length: 1,
+        effectiveLength: 1,
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
@@ -35,7 +37,9 @@ describe('calendar', () => {
         projId: 1,
         name: 'task2',
         startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-04'),
         length: 2,
+        effectiveLength: 2,
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
@@ -54,7 +58,9 @@ describe('calendar', () => {
         projId: 1,
         name: 'task1',
         startDate: new Date('2024-05-04'),
+        endDate: new Date('2024-05-04'),
         length: 1,
+        effectiveLength: 1,
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
@@ -64,7 +70,9 @@ describe('calendar', () => {
         projId: 1,
         name: 'task2',
         startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-05'),
         length: 2,
+        effectiveLength: 2,
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
@@ -83,7 +91,9 @@ describe('calendar', () => {
         projId: 1,
         name: 'task1',
         startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-04'),
         length: 1,
+        effectiveLength: 1,
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
@@ -93,7 +103,9 @@ describe('calendar', () => {
         projId: 1,
         name: 'task1',
         startDate: new Date('2024-05-04'),
+        endDate: new Date('2024-05-04'),
         length: 1,
+        effectiveLength: 1,
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
@@ -117,7 +129,9 @@ describe('calendar', () => {
         projId: 1,
         name: 'task1',
         startDate: new Date('2024-04-24'),
+        endDate: new Date('2024-04-24'),
         length: 1,
+        effectiveLength: 1,
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
@@ -140,7 +154,9 @@ describe('taskbars', () => {
         projId: 1,
         name: 'task1',
         startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-04'),
         length: 1,
+        effectiveLength: 1,
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
@@ -150,7 +166,9 @@ describe('taskbars', () => {
         projId: 1,
         name: 'task2',
         startDate: new Date('2024-04-05'),
+        endDate: new Date('2024-04-05'),
         length: 1,
+        effectiveLength: 1,
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
@@ -161,5 +179,40 @@ describe('taskbars', () => {
 
     expect(screen.getByTestId('task-1_bar')).toBeInTheDocument()
     expect(screen.getByTestId('task-2_bar')).toBeInTheDocument()
+  })
+})
+
+describe.skip('dependencies', () => {
+  it('shows dependencies', () => {
+    const tasks: Task[] = [
+      {
+        id: 1,
+        projId: 1,
+        name: 'task1',
+        startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-04'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'red',
+      },
+      {
+        id: 2,
+        projId: 1,
+        name: 'task2',
+        startDate: new Date('2024-04-05'),
+        endDate: new Date('2024-04-05'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [1],
+        color: 'green',
+      },
+    ]
+
+    render(<Calendar tasks={tasks} />)
+
+    expect(screen.getByTestId('dependency-1->2')).toBeInTheDocument()
   })
 })

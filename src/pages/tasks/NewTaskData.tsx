@@ -4,7 +4,7 @@ import { Id } from '../../model/types'
 import { Button } from '../../styleguide/Button'
 import { Input } from '../../styleguide/Input'
 import { Select } from '../../styleguide/Select'
-import { getRandomColor } from './helpers'
+import { ONE_DAY, calculateTaskLength, getHolidaysClass, getRandomColor } from './helpers'
 import React from 'react'
 
 const Form = styled.form`
@@ -16,6 +16,8 @@ const Form = styled.form`
 const Buttons = styled.div`
   grid-column: 1/3;
 `
+
+const hd = getHolidaysClass('IT')
 
 const NewTaskData = ({
   taskName,
@@ -39,11 +41,20 @@ const NewTaskData = ({
         const lengthInput = form.elements[2] as HTMLInputElement
         const assigneeInput = form.elements[3] as HTMLInputElement
         const dependenciesSelect = form.elements[4] as HTMLSelectElement
+
+        const startDate = new Date(startInput.value)
+        const length = Number(lengthInput.value)
+        const holidays = hd.getHolidays(startDate.getFullYear())
+        const effectiveLength = calculateTaskLength({ startDate, length }, holidays)
+        const endDate = new Date(startDate.getTime() + ONE_DAY * (effectiveLength - 1))
+
         saveTask({
           name: nameInput.value,
           projId,
-          startDate: new Date(startInput.value),
-          length: Number(lengthInput.value),
+          startDate,
+          endDate,
+          length,
+          effectiveLength,
           assignee: assigneeInput.value,
           dependenciesId: ([] as string[])
             .concat(dependenciesSelect.value)
