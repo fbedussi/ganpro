@@ -16,7 +16,6 @@ import {
 
 const hd = new Holidays()
 hd.init('IT')
-const holidays = hd.getHolidays(new Date().getFullYear())
 
 describe('calculateTaskLength', () => {
   it('returns task length if the task do not span over holidays or weekends', () => {
@@ -24,7 +23,7 @@ describe('calculateTaskLength', () => {
       startDate: new Date('2024-04-15'),
       length: 3,
     } as Task
-    expect(calculateTaskLength(task, holidays)).toBe(task.length)
+    expect(calculateTaskLength(task, hd)).toBe(task.length)
   })
 
   it('returns task length + weekends if the task span over weekends', () => {
@@ -32,7 +31,7 @@ describe('calculateTaskLength', () => {
       startDate: new Date('2024-04-26'),
       length: 2,
     } as Task
-    expect(calculateTaskLength(task, holidays)).toBe(4)
+    expect(calculateTaskLength(task, hd)).toBe(4)
   })
 
   it('returns task length + holidays if the task span over holydays', () => {
@@ -40,7 +39,7 @@ describe('calculateTaskLength', () => {
       startDate: new Date('2024-04-24'),
       length: 2,
     } as Task
-    expect(calculateTaskLength(task, holidays)).toBe(3)
+    expect(calculateTaskLength(task, hd)).toBe(3)
   })
 
   it('returns task length + holidays if the task span over multiple holydays', () => {
@@ -48,7 +47,15 @@ describe('calculateTaskLength', () => {
       startDate: new Date('2024-04-24'),
       length: 5,
     } as Task
-    expect(calculateTaskLength(task, holidays)).toBe(9)
+    expect(calculateTaskLength(task, hd)).toBe(9)
+  })
+
+  it('[BUG]: task starting on 2024-05-02, length 2, should have effectiveLength 2', () => {
+    const task = {
+      startDate: new Date('2024-05-02'),
+      length: 2,
+    } as Task
+    expect(calculateTaskLength(task, hd)).toBe(2)
   })
 })
 
@@ -72,43 +79,39 @@ describe('getRandomColorValue', () => {
 
 describe('getTasksStartAndEndDates', () => {
   it('returns [undefined, undefined] if there are no tasks', () => {
-    expect(getTasksStartAndEndDates([], holidays)).toEqual([undefined, undefined])
+    expect(getTasksStartAndEndDates([])).toEqual([undefined, undefined])
   })
 
   describe('returns the start and end date of a task', () => {
     it('returns the same day if length is 1', () => {
       expect(
-        getTasksStartAndEndDates(
-          [{ startDate: new Date('2024-04-04'), length: 1 } as Task],
-          holidays,
-        ),
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
+        ]),
       ).toEqual([new Date('2024-04-04'), new Date('2024-04-04')])
     })
 
     it('returns the right end date if length is more than 1', () => {
       expect(
-        getTasksStartAndEndDates(
-          [{ startDate: new Date('2024-04-01'), length: 3 } as Task],
-          holidays,
-        ),
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-01'), length: 3, effectiveLength: 3 } as Task,
+        ]),
       ).toEqual([new Date('2024-04-01'), new Date('2024-04-03')])
     })
 
     it('returns the right end date considering weekends', () => {
       expect(
-        getTasksStartAndEndDates(
-          [{ startDate: new Date('2024-04-04'), length: 3 } as Task],
-          holidays,
-        ),
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-04'), length: 3, effectiveLength: 5 } as Task,
+        ]),
       ).toEqual([new Date('2024-04-04'), new Date('2024-04-08')])
     })
 
     it('returns the right end date considering weekends and holydays', () => {
       expect(
-        getTasksStartAndEndDates(
-          [{ startDate: new Date('2024-04-24'), length: 3 } as Task],
-          holidays,
-        ),
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-24'), length: 3, effectiveLength: 6 } as Task,
+        ]),
       ).toEqual([new Date('2024-04-24'), new Date('2024-04-29')])
     })
   })
@@ -116,52 +119,46 @@ describe('getTasksStartAndEndDates', () => {
   describe('returns the start and end date of a series of tasks', () => {
     it('returns the same day if length is 1', () => {
       expect(
-        getTasksStartAndEndDates(
-          [
-            { startDate: new Date('2024-04-04'), length: 1 } as Task,
-            { startDate: new Date('2024-05-06'), length: 1 } as Task,
-          ],
-          holidays,
-        ),
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
+          { startDate: new Date('2024-05-06'), length: 1, effectiveLength: 1 } as Task,
+        ]),
       ).toEqual([new Date('2024-04-04'), new Date('2024-05-06')])
     })
 
     it('returns the right end date if length is more than 1', () => {
       expect(
-        getTasksStartAndEndDates(
-          [{ startDate: new Date('2024-04-01'), length: 3 } as Task],
-          holidays,
-        ),
-      ).toEqual([new Date('2024-04-01'), new Date('2024-04-03')])
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-01'), length: 3, effectiveLength: 3 } as Task,
+          { startDate: new Date('2024-04-02'), length: 3, effectiveLength: 3 } as Task,
+        ]),
+      ).toEqual([new Date('2024-04-01'), new Date('2024-04-04')])
     })
 
     it('returns the right end date considering weekends', () => {
       expect(
-        getTasksStartAndEndDates(
-          [{ startDate: new Date('2024-04-04'), length: 3 } as Task],
-          holidays,
-        ),
-      ).toEqual([new Date('2024-04-04'), new Date('2024-04-08')])
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-04'), length: 3, effectiveLength: 5 } as Task,
+          { startDate: new Date('2024-04-05'), length: 3, effectiveLength: 5 } as Task,
+        ]),
+      ).toEqual([new Date('2024-04-04'), new Date('2024-04-09')])
     })
 
     it('returns the right end date considering weekends and holydays', () => {
       expect(
-        getTasksStartAndEndDates(
-          [{ startDate: new Date('2024-04-24'), length: 3 } as Task],
-          holidays,
-        ),
-      ).toEqual([new Date('2024-04-24'), new Date('2024-04-29')])
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-23'), length: 3, effectiveLength: 7 } as Task,
+          { startDate: new Date('2024-04-24'), length: 3, effectiveLength: 6 } as Task,
+        ]),
+      ).toEqual([new Date('2024-04-23'), new Date('2024-04-29')])
     })
 
     it('returns the right end date even if the first task ends after the second', () => {
       expect(
-        getTasksStartAndEndDates(
-          [
-            { startDate: new Date('2024-04-22'), length: 10 } as Task,
-            { startDate: new Date('2024-04-24'), length: 3 } as Task,
-          ],
-          holidays,
-        ),
+        getTasksStartAndEndDates([
+          { startDate: new Date('2024-04-22'), length: 10, effectiveLength: 16 } as Task,
+          { startDate: new Date('2024-04-24'), length: 3, effectiveLength: 6 } as Task,
+        ]),
       ).toEqual([new Date('2024-04-22'), new Date('2024-05-07')])
     })
   })
@@ -240,31 +237,27 @@ describe('getMonthDays', () => {
 describe('getTasksMonths', () => {
   it('returns the month of a task', () => {
     expect(
-      getTasksMonths([{ startDate: new Date('2024-04-04'), length: 1 } as Task], holidays),
+      getTasksMonths([
+        { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
+      ]),
     ).toEqual(['2024-04'])
   })
 
   it('returns the months of multiple tasks', () => {
     expect(
-      getTasksMonths(
-        [
-          { startDate: new Date('2024-04-04'), length: 1 } as Task,
-          { startDate: new Date('2024-05-04'), length: 1 } as Task,
-        ],
-        holidays,
-      ),
+      getTasksMonths([
+        { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
+        { startDate: new Date('2024-05-04'), length: 1, effectiveLength: 1 } as Task,
+      ]),
     ).toEqual(['2024-04', '2024-05'])
   })
 
   it('considers also the end date of a task', () => {
     expect(
-      getTasksMonths(
-        [
-          { startDate: new Date('2024-11-04'), length: 1 } as Task,
-          { startDate: new Date('2025-05-15'), length: 16 } as Task,
-        ],
-        holidays,
-      ),
+      getTasksMonths([
+        { startDate: new Date('2024-11-04'), length: 1, effectiveLength: 1 } as Task,
+        { startDate: new Date('2025-05-15'), length: 16, effectiveLength: 22 } as Task,
+      ]),
     ).toEqual([
       '2024-11',
       '2024-12',
