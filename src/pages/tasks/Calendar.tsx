@@ -166,7 +166,7 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
 
   const holidays = hd.getHolidays(startDateFull.getFullYear())
 
-  const months = getTasksMonths(tasks, holidays).map(month => ({
+  const months = getTasksMonths(tasks).map(month => ({
     month,
     days: getMonthDays(month).map(day => {
       const task = tasks.find(task => task.startDate.toISOString().includes(day))

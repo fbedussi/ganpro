@@ -44,8 +44,7 @@ const NewTaskData = ({
 
         const startDate = new Date(startInput.value)
         const length = Number(lengthInput.value)
-        const holidays = hd.getHolidays(startDate.getFullYear())
-        const effectiveLength = calculateTaskLength({ startDate, length }, holidays)
+        const effectiveLength = calculateTaskLength({ startDate, length }, hd)
         const endDate = new Date(startDate.getTime() + ONE_DAY * (effectiveLength - 1))
 
         saveTask({

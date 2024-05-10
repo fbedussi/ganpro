@@ -1,4 +1,4 @@
-import Holidays, { HolidaysTypes } from 'date-holidays'
+import Holidays from 'date-holidays'
 import { Day, Dependency, Month, Task } from '../../model'
 import { padNumber } from '../../helpers/utils'
 
@@ -14,32 +14,21 @@ export const getHolidaysClass = (country: string): Holidays => {
   return hd
 }
 
-export const calculateTaskLength = (
-  task: Pick<Task, 'startDate' | 'length'>,
-  holidays: HolidaysTypes.Holiday[],
-) => {
-  const startWeekDay = task.startDate.getDay()
-  const weekends = Math.floor((startWeekDay + (task.length - 1)) / 5)
+export const calculateTaskLength = (task: Pick<Task, 'startDate' | 'length'>, hd: Holidays) => {
+  let remainingDays = task.length
+  let length = 0
+  let day = task.startDate
+  while (remainingDays) {
+    length++
 
-  const lengthWithHolidays = task.length + weekends * 2
+    if (![0, 6].includes(day.getDay()) && !hd.isHoliday(day)) {
+      remainingDays--
+    }
 
-  const taskStartTime = task.startDate.getTime()
-
-  const findFirstNextHolyday = (holidays: HolidaysTypes.Holiday[], startTime: number) =>
-    holidays.findIndex(({ start }) => start.getTime() > startTime)
-
-  const firstHolydayAfterStartTimeIndex = findFirstNextHolyday(holidays, taskStartTime)
-  let taskEndTime = taskStartTime + lengthWithHolidays * ONE_DAY
-  let index = firstHolydayAfterStartTimeIndex
-  let includedHolydays = 0
-  while (holidays[index]?.end.getTime() < taskEndTime) {
-    includedHolydays++
-    taskEndTime += ONE_DAY
-    const nextIndex = index + 1
-    index = findFirstNextHolyday(holidays.slice(nextIndex), taskStartTime) + nextIndex
+    day = new Date(day.getTime() + ONE_DAY)
   }
 
-  return lengthWithHolidays + includedHolydays
+  return length
 }
 
 export const formatDateForCalHeader = (dateStr: string, locale = 'it-IT') => {
@@ -62,18 +51,16 @@ export const getRandomColor = () => {
   return randomColor
 }
 
-export const getTasksStartAndEndDates = (tasks: Task[], hd: HolidaysTypes.Holiday[]) => {
+export const getTasksStartAndEndDates = (tasks: Task[]) => {
   const startDate = tasks.length
     ? tasks.sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0].startDate
     : undefined
 
   const endTimestamp = tasks.length
     ? tasks
-        .map(task =>
-          new Date(
-            task.startDate.getTime() + ONE_DAY * (calculateTaskLength(task, hd) - 1),
-          ).getTime(),
-        )
+        .map(task => {
+          return new Date(task.startDate.getTime() + ONE_DAY * (task.effectiveLength - 1)).getTime()
+        })
         .sort((a, b) => b - a)[0]
     : undefined
 
@@ -117,8 +104,8 @@ export const getMonthDays = (month: Month) => {
   return days
 }
 
-export const getTasksMonths = (tasks: Task[], hd: HolidaysTypes.Holiday[]) => {
-  const [startDay, endDay] = getTasksStartAndEndDates(tasks, hd)
+export const getTasksMonths = (tasks: Task[]) => {
+  const [startDay, endDay] = getTasksStartAndEndDates(tasks)
 
   const startMonth = (startDay || new Date()).toISOString().substring(0, 7) as Month
   const endMonth = (endDay || new Date()).toISOString().substring(0, 7) as Month
