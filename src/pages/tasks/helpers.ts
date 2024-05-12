@@ -162,3 +162,14 @@ export const calculateDependencyStyle = (dependency: Dependency, days: Day[]) =>
     width: gridColumnStart === gridColumnEnd ? 0 : undefined,
   }
 }
+
+export const calculateTaskBarStyle = (task: Task, taskIndex: number, days: Day[]) => {
+  const gridColumnStart = days.indexOf(task.startDate.toISOString().split('T')[0] as Day) + 1
+
+  return {
+    backgroundColor: task.color,
+    gridRowStart: taskIndex + 1,
+    gridColumnStart,
+    gridColumnEnd: `span ${task.effectiveLength}`,
+  }
+}

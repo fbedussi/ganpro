@@ -233,7 +233,7 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
                 key={task.id}
                 task={task}
                 taskIndex={index}
-                firstDay={Number(months[0].days[0].date.substring(8))}
+                days={dates}
               />
             ))}
           </Tasks>

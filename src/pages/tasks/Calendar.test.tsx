@@ -182,7 +182,7 @@ describe('taskbars', () => {
   })
 })
 
-describe.skip('dependencies', () => {
+describe('dependencies', () => {
   it('shows dependencies', () => {
     const tasks: Task[] = [
       {

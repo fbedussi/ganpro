@@ -1,6 +1,7 @@
 import React, { ForwardedRef, forwardRef } from 'react'
-import { Task } from '../../model'
+import { Day, Task } from '../../model'
 import styled from 'styled-components'
+import { calculateTaskBarStyle } from './helpers'
 
 const Wrapper = styled.div`
   height: var(--row-height);
@@ -13,12 +14,12 @@ const TaskBar = (
   {
     task,
     taskIndex,
-    firstDay,
+    days,
   }: {
     ref: ForwardedRef<HTMLDivElement>
     task: Task
     taskIndex: number
-    firstDay: number
+    days: Day[]
   },
   ref: ForwardedRef<HTMLDivElement>,
 ) => {
@@ -26,12 +27,7 @@ const TaskBar = (
     <Wrapper
       ref={ref}
       data-testid={`task-${task.id}_bar`}
-      style={{
-        backgroundColor: task.color,
-        gridRowStart: taskIndex + 1,
-        gridColumnStart: task.startDate.getDate() - firstDay + 1,
-        gridColumnEnd: `span ${task.effectiveLength}`,
-      }}
+      style={calculateTaskBarStyle(task, taskIndex, days)}
     ></Wrapper>
   )
 }
