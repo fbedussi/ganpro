@@ -119,32 +119,31 @@ describe('Open Task details', () => {
 
   it('reopens the task details form', async () => {
     cy.visit(`/ganpro/projects/${projId}`)
-    cy.contains(task1Name).click()
+    cy.get(task1Name).click()
     cy.get('[data-testid="task-details-form"]').should('be.visible')
     cy.get('[data-testid="close-button"]').click()
     cy.get('[data-testid="task-details-form"]').should('not.be.visible')
-    cy.contains(task1Name).click()
+    cy.get(task1Name).click()
     cy.get('[data-testid="task-details-form"]').should('be.visible')
   })
 })
 
 describe('update a task', () => {
-  it('updates the task data', () => {
+  it('updates the task data, after the task update the modal il closed and can be reopened', () => {
     cy.visit(`/ganpro/projects/${projId}`)
-    cy.contains(task1Name).click()
-    cy.get('form').contains('label', 'name').find('input').type(`${task1Name}_bis`)
-    cy.get('button[type="submit"]').click()
-    cy.contains(`${task1Name}_bis`)
-  })
-
-  it('after the task update the modal il closed and can be reopened', () => {
-    const newName = `${task1Name}_bis`
-    cy.visit(`/ganpro/projects/${projId}`)
-    cy.contains(task1Name).click()
-    cy.get('form').contains('label', 'name').find('input').type(newName)
+    cy.contains('button', 'task1').click()
+    cy.get('form').contains('label', 'name').find('input').clear().type('task1_bis')
     cy.get('button[type="submit"]').click()
     cy.get('[data-testid="task-details-form"]').should('not.be.visible')
-    cy.contains(newName).click()
+    cy.contains('task1_bis').click()
     cy.get('[data-testid="task-details-form"]').should('be.visible')
+  })
+})
+
+describe('back button', () => {
+  it('leads to the home page', () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.get('[data-testid="back-button"]').click()
+    cy.location('pathname').should('eq', '/ganpro')
   })
 })

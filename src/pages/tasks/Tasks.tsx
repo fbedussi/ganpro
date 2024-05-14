@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Task } from '../../model/task'
 import { Project } from '../../model/project'
 import Modal from '../../styleguide/Modal'
@@ -14,6 +14,7 @@ import {
 import Calendar from './Calendar'
 import Header from '../../components/Header'
 import styled from 'styled-components'
+import { ChevronLeft } from '../../styleguide/icons/ChevronLeft'
 
 const Main = styled.main`
   display: flex;
@@ -45,7 +46,14 @@ export const _Tasks = ({
 
   return (
     <>
-      <Header title={`${project.name} tasks`} />
+      <Header
+        pre={
+          <Link to="/" data-testid="back-button">
+            <ChevronLeft />
+          </Link>
+        }
+        title={`${project.name} tasks`}
+      />
 
       <Main className="container">
         <Calendar tasks={tasks} setSelectedTask={setSelectedTask} />
