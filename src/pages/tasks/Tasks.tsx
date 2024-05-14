@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Task } from '../../model/task'
 import { Project } from '../../model/project'
 import Modal from '../../styleguide/Modal'
@@ -45,7 +45,14 @@ export const _Tasks = ({
 
   return (
     <>
-      <Header title={`${project.name} tasks`} />
+      <Header
+        pre={
+          <Link to="/" data-testid="back-button">
+            Back
+          </Link>
+        }
+        title={`${project.name} tasks`}
+      />
 
       <Main className="container">
         <Calendar tasks={tasks} setSelectedTask={setSelectedTask} />
