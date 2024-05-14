@@ -121,7 +121,7 @@ const Modal = ({
     >
       <Content>
         <CloseButtonWrapper>
-          <button className="outline" onClick={close}>
+          <button data-testid="close-button" className="outline" onClick={close}>
             X
           </button>
         </CloseButtonWrapper>

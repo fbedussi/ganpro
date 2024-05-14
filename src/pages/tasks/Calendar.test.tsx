@@ -5,13 +5,13 @@ import { Task } from '../../model'
 
 describe('calendar', () => {
   it('shows the current day if there are no tasks', () => {
-    render(<Calendar tasks={[]} />)
+    render(<Calendar tasks={[]} setSelectedTask={() => {}} />)
 
     expect(screen.getByTestId(new Date().toISOString().split('T')[0])).toBeInTheDocument()
   })
 
   it('shows the current month if there are no tasks', () => {
-    render(<Calendar tasks={[]} />)
+    render(<Calendar tasks={[]} setSelectedTask={() => {}} />)
 
     expect(
       screen.getByTestId(new Date().toISOString().split('T')[0].substring(0, 7)),
@@ -46,7 +46,7 @@ describe('calendar', () => {
       },
     ]
 
-    render(<Calendar tasks={tasks} />)
+    render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
 
     expect(screen.getByTestId('2024-04-04')).toBeInTheDocument()
   })
@@ -79,7 +79,7 @@ describe('calendar', () => {
       },
     ]
 
-    render(<Calendar tasks={tasks} />)
+    render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
 
     expect(getByText(screen.getByTestId('2024-04'), /aprile/i)).toBeInTheDocument()
   })
@@ -112,7 +112,7 @@ describe('calendar', () => {
       },
     ]
 
-    render(<Calendar tasks={tasks} />)
+    render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
 
     for (let day = 1; day <= 30; day++) {
       expect(screen.getByTestId(`2024-04-${day < 10 ? `0${day}` : day}`)).toBeInTheDocument()
@@ -138,7 +138,7 @@ describe('calendar', () => {
       },
     ]
 
-    render(<Calendar tasks={tasks} />)
+    render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
 
     expect(screen.getByTestId('2024-04-25')).toHaveClass('holiday')
     expect(screen.getByTestId('2024-04-27')).toHaveClass('weekend')
@@ -175,7 +175,7 @@ describe('taskbars', () => {
       },
     ]
 
-    render(<Calendar tasks={tasks} />)
+    render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
 
     expect(screen.getByTestId('task-1_bar')).toBeInTheDocument()
     expect(screen.getByTestId('task-2_bar')).toBeInTheDocument()
@@ -211,7 +211,7 @@ describe('dependencies', () => {
       },
     ]
 
-    render(<Calendar tasks={tasks} />)
+    render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
 
     expect(screen.getByTestId('dependency-1->2')).toBeInTheDocument()
   })
