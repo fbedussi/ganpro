@@ -4,9 +4,11 @@ import { Project, Task } from '../../src/model'
 const proj1 = 'proj1'
 let projId: number | undefined
 
-const task1 = 'task1'
+const task1Name = 'task1'
 const task2 = 'task2'
 let task1Id: number | undefined
+
+let taskData: Omit<Task, 'id'>
 
 before(async () => {
   const queryFnProj = queryIndexedDb('projects')
@@ -25,17 +27,21 @@ before(async () => {
       queryFnTasks({ query: task.id, operation: 'delete' })
     }),
   )
+
+  taskData = {
+    name: task1Name,
+    projId: projId!,
+    startDate: new Date('2024-04-04'),
+    endDate: new Date('2024-04-04'),
+    assignee: 'foo',
+    length: 1,
+    effectiveLength: 1,
+    dependenciesId: [],
+    color: 'red',
+  }
+
   const task1CreationResult = await queryFnTasks({
-    query: {
-      name: task1,
-      projId,
-      startDate: new Date('2024-04-04'),
-      endDate: new Date('2024-04-04'),
-      length: 1,
-      effectiveLength: 1,
-      dependenciesId: [],
-      color: 'red',
-    },
+    query: taskData,
     operation: 'create',
   })
   task1Id = task1CreationResult.data
@@ -59,7 +65,7 @@ describe('Listing Tasks', () => {
   it('shows the list of tasks when the user clicks on a project', () => {
     cy.visit('/ganpro/')
     cy.contains(proj1).click()
-    cy.contains(task1)
+    cy.contains(task1Name)
     cy.contains(task2)
   })
 })
@@ -87,5 +93,58 @@ describe('Show the calendar', () => {
   it('The calendar has a taskbar for every task', () => {
     cy.visit(`/ganpro/projects/${projId}`)
     cy.get(`[data-testid="calendar"] [data-testid="task-${task1Id}_bar"]`)
+  })
+})
+
+describe('Open Task details', () => {
+  it('opens the modal', () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.contains(task1Name).click()
+    cy.get('dialog').should('be.visible')
+  })
+
+  it('the modal is populated with task data', () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.contains(task1Name).click()
+    cy.get('form')
+      .contains('label', 'start date')
+      .find('input')
+      .should('have.value', taskData.startDate.toISOString().split('T')[0])
+    cy.get('form').contains('label', 'length').find('input').should('have.value', taskData.length)
+    cy.get('form')
+      .contains('label', 'assignee')
+      .find('input')
+      .should('have.value', taskData.assignee)
+  })
+
+  it('reopens the task details form', async () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.contains(task1Name).click()
+    cy.get('[data-testid="task-details-form"]').should('be.visible')
+    cy.get('[data-testid="close-button"]').click()
+    cy.get('[data-testid="task-details-form"]').should('not.be.visible')
+    cy.contains(task1Name).click()
+    cy.get('[data-testid="task-details-form"]').should('be.visible')
+  })
+})
+
+describe('update a task', () => {
+  it('updates the task data', () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.contains(task1Name).click()
+    cy.get('form').contains('label', 'name').find('input').type(`${task1Name}_bis`)
+    cy.get('button[type="submit"]').click()
+    cy.contains(`${task1Name}_bis`)
+  })
+
+  it('after the task update the modal il closed and can be reopened', () => {
+    const newName = `${task1Name}_bis`
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.contains(task1Name).click()
+    cy.get('form').contains('label', 'name').find('input').type(newName)
+    cy.get('button[type="submit"]').click()
+    cy.get('[data-testid="task-details-form"]').should('not.be.visible')
+    cy.contains(newName).click()
+    cy.get('[data-testid="task-details-form"]').should('be.visible')
   })
 })

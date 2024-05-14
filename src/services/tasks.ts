@@ -34,7 +34,20 @@ export const tasksApi = createApi({
       }),
       invalidatesTags: [TAG],
     }),
+
+    updateTask: builder.mutation<Task, Task>({
+      query: task => ({
+        query: task,
+        operation: 'update',
+      }),
+      invalidatesTags: [TAG],
+    }),
   }),
 })
 
-export const { useGetTaskQuery, useGetTasksByProjectQuery, useAddTaskMutation } = tasksApi
+export const {
+  useGetTaskQuery,
+  useGetTasksByProjectQuery,
+  useAddTaskMutation,
+  useUpdateTaskMutation,
+} = tasksApi

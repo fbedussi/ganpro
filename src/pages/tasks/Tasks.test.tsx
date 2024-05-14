@@ -1,5 +1,4 @@
 import { render, screen } from '../../test-utils'
-import userEvent from '@testing-library/user-event'
 
 import 'fake-indexeddb/auto'
 import { Project } from '../../model/project'
@@ -47,43 +46,45 @@ describe('tasks page', () => {
   ]
 
   it('displays the title', () => {
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
     expect(screen.getByText(/tasks/i)).toBeInTheDocument()
   })
 
   it('displays the project name', () => {
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
     expect(screen.getByText(new RegExp(project.name, 'i'))).toBeInTheDocument()
   })
 
   it('displays the tasks', () => {
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
     expect(screen.getAllByText(tasks[0].name).length > 0).toBe(true)
     expect(screen.getAllByText(tasks[1].name).length > 0).toBe(true)
   })
 
   it('displays a new task input', () => {
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
     expect(screen.getByTestId('new-task-input')).toBeInTheDocument()
   })
 
   it('displays a save task button', () => {
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
     expect(screen.getByTestId('add-task-btn')).toBeInTheDocument()
   })
 
   it('the add task button is disabled until the new project input is blank', async () => {
-    const user = userEvent.setup()
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    const { user } = render(
+      <_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />,
+    )
     expect(screen.getByTestId('add-task-btn')).toBeDisabled()
     await user.type(screen.getByTestId('new-task-input'), 'new task')
     expect(screen.getByTestId('add-task-btn')).toBeEnabled()
   })
 
   it('the save new task button opens the task details', async () => {
-    const user = userEvent.setup()
     const saveNewTask = jest.fn()
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} />)
+    const { user } = render(
+      <_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} updateTask={() => {}} />,
+    )
     await user.type(screen.getByTestId('new-task-input'), 'new task')
 
     expect(screen.getByTestId('task-details-form')).not.toBeVisible()
@@ -93,9 +94,10 @@ describe('tasks page', () => {
 
   describe('adding a new task', () => {
     it('the new task input is cleared out', async () => {
-      const user = userEvent.setup()
       const saveNewTask = jest.fn()
-      render(<_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} />)
+      const { user } = render(
+        <_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} updateTask={() => {}} />,
+      )
       const newTaskInput = screen.getByTestId('new-task-input') as HTMLInputElement
       await user.type(newTaskInput, 'new task')
       await user.click(screen.getByTestId('add-task-btn'))
@@ -107,9 +109,10 @@ describe('tasks page', () => {
     })
 
     it('the add new task button is disabled', async () => {
-      const user = userEvent.setup()
       const saveNewTask = jest.fn()
-      render(<_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} />)
+      const { user } = render(
+        <_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} updateTask={() => {}} />,
+      )
       const saveTaskButton = screen.getByTestId('add-task-btn') as HTMLButtonElement
       await user.type(screen.getByTestId('new-task-input'), 'new task')
       await user.click(saveTaskButton)
@@ -121,9 +124,10 @@ describe('tasks page', () => {
     })
 
     it('the dialog is closed', async () => {
-      const user = userEvent.setup()
       const saveNewTask = jest.fn()
-      render(<_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} />)
+      const { user } = render(
+        <_Tasks project={project} tasks={tasks} saveNewTask={saveNewTask} updateTask={() => {}} />,
+      )
       await user.type(screen.getByTestId('new-task-input'), 'new task')
       await user.click(screen.getByTestId('add-task-btn'))
       await user.type(screen.getByLabelText(/start date/i), '2024-04-04')
@@ -134,7 +138,25 @@ describe('tasks page', () => {
   })
 
   it('display the calendar', () => {
-    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} />)
+    render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
     expect(screen.getByTestId('calendar')).toBeInTheDocument()
+  })
+
+  describe('task details', () => {
+    it('opens the task details form', async () => {
+      const { user } = render(
+        <_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />,
+      )
+      await user.click(screen.getByTestId(`task-${tasks[0].name}`))
+      expect(screen.getByTestId('task-details-form')).toBeVisible()
+    })
+
+    it('the task details form is populated with task data', async () => {
+      const { user } = render(
+        <_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />,
+      )
+      await user.click(screen.getByTestId(`task-${tasks[0].name}`))
+      expect(screen.getByTestId('task-details-form')).toBeVisible()
+    })
   })
 })

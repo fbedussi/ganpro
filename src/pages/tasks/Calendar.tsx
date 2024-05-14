@@ -137,7 +137,7 @@ const Dependency = styled.div`
     position: absolute;
     top: calc(var(--row-height) / 2);
     left: calc(-0.5rem + var(--connector-width));
-    width: calc(50% + 0.5rem);
+    width: calc(50% + 0.5rem - var(--connector-width));
     height: calc((100% - var(--row-height)) / 2);
     border-top: solid var(--connector-width) var(--connector-color);
     border-right: solid var(--connector-width) var(--connector-color);
@@ -159,7 +159,13 @@ const Dependency = styled.div`
 
 const hd = getHolidaysClass('IT')
 
-export const Calendar = ({ tasks }: { tasks: Task[] }) => {
+export const Calendar = ({
+  tasks,
+  setSelectedTask,
+}: {
+  tasks: Task[]
+  setSelectedTask: (task: Task) => void
+}) => {
   const startDateFull = tasks.length
     ? tasks.slice().sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0].startDate
     : new Date()
@@ -201,7 +207,13 @@ export const Calendar = ({ tasks }: { tasks: Task[] }) => {
     <Container data-testid="calendar">
       <TaskList>
         {tasks.map(task => (
-          <div key={task.id}>{task.name}</div>
+          <button
+            key={task.id}
+            data-testid={`task-${task.name}`}
+            onClick={() => setSelectedTask(task)}
+          >
+            {task.name}
+          </button>
         ))}
       </TaskList>
 
