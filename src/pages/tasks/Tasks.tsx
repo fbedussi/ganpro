@@ -14,6 +14,7 @@ import {
 import Calendar from './Calendar'
 import Header from '../../components/Header'
 import styled from 'styled-components'
+import { ChevronLeft } from '../../styleguide/icons/ChevronLeft'
 
 const Main = styled.main`
   display: flex;
@@ -48,7 +49,7 @@ export const _Tasks = ({
       <Header
         pre={
           <Link to="/" data-testid="back-button">
-            Back
+            <ChevronLeft />
           </Link>
         }
         title={`${project.name} tasks`}
