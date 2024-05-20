@@ -23,6 +23,23 @@ const Main = styled.main`
   flex: 1;
 `
 
+const NewTaskForm = styled.form`
+  display: block;
+`
+
+const InputAndButton = styled.div`
+  display: flex;
+  gap: 1rem;
+
+  input {
+    flex: 1;
+  }
+
+  button {
+    width: fit-content;
+  }
+`
+
 export const _Tasks = ({
   project,
   tasks,
@@ -58,10 +75,16 @@ export const _Tasks = ({
       <Main className="container">
         <Calendar tasks={tasks} setSelectedTask={setSelectedTask} />
 
-        <div>
-          <label>
-            New task
+        <NewTaskForm
+          onSubmit={e => {
+            e.preventDefault()
+            setIsModalOpen(true)
+          }}
+        >
+          <label htmlFor="new-task-input">New task</label>
+          <InputAndButton>
             <input
+              id="new-task-input"
               type="text"
               data-testid="new-task-input"
               value={newTaskName}
@@ -70,18 +93,11 @@ export const _Tasks = ({
                 setNewTaskName(ev.target.value)
               }}
             />
-          </label>
-          <button
-            className="button"
-            data-testid="add-task-btn"
-            disabled={disableAddTaskBtn}
-            onClick={() => {
-              setIsModalOpen(true)
-            }}
-          >
-            Add task
-          </button>
-        </div>
+            <button className="button" data-testid="add-task-btn" disabled={disableAddTaskBtn}>
+              Add task
+            </button>
+          </InputAndButton>
+        </NewTaskForm>
       </Main>
 
       <Modal
