@@ -10,6 +10,11 @@ const Form = styled.form`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+
+  input,
+  select {
+    width: 100%;
+  }
 `
 
 const Buttons = styled.div`
@@ -80,22 +85,22 @@ const TaskData = ({
         }
       }}
     >
-      <Input label="name" defaultValue={data.name} required />
+      <Input label="Name" defaultValue={data.name} required />
       <Input
-        label="start date"
+        label="Start date"
         type="date"
         defaultValue={'startDate' in data ? data.startDate.toISOString().split('T')[0] : undefined}
         required
       />
       <Input
-        label="length"
+        label="Length"
         type="number"
         defaultValue={'length' in data ? data.length.toString() : '1'}
         required
       />
-      <Input label="assignee" type="text" defaultValue={'assignee' in data ? data.assignee : ''} />
+      <Input label="Assignee" type="text" defaultValue={'assignee' in data ? data.assignee : ''} />
       <Select
-        label="dependencies"
+        label="Dependencies"
         multiple
         defaultValue={'dependenciesId' in data ? data.dependenciesId.map(id => id.toString()) : []}
         options={[{ value: '', label: '' }].concat(

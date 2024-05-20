@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 import styled from 'styled-components'
+import { CloseIcon } from './icons/CloseIcon'
 
 const CloseButtonWrapper = styled.div`
   display: flex;
@@ -45,6 +46,7 @@ const Content = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 `
 
 const Modal = ({
@@ -122,7 +124,7 @@ const Modal = ({
       <Content>
         <CloseButtonWrapper>
           <button data-testid="close-button" className="outline" onClick={close}>
-            X
+            <CloseIcon />
           </button>
         </CloseButtonWrapper>
         {children}

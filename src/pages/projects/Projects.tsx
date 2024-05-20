@@ -3,6 +3,27 @@ import { Project } from '../../model/project'
 import { useAddProjectMutation, useGetAllProjectsQuery } from '../../services/projects'
 import ProjectCard from './ProjectCard'
 import React from 'react'
+import Header from '../../components/Header'
+import styled from 'styled-components'
+
+const Main = styled.main`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`
+
+const InputAndButton = styled.div`
+  display: flex;
+  gap: 1rem;
+
+  input {
+    flex: 1;
+  }
+
+  button {
+    width: fit-content;
+  }
+`
 
 export const _Projects = ({
   projects,
@@ -16,33 +37,43 @@ export const _Projects = ({
 
   return (
     <>
-      <h1>Projects</h1>
-      {projects.map(project => (
-        <ProjectCard key={project.id} project={project} />
-      ))}
-      <label>
-        New project
-        <input
-          type="text"
-          data-testid="new-project-input"
-          value={newProjectName}
-          onChange={(ev: ChangeEvent<HTMLInputElement>) => {
-            setDisableAddProjectBtn(!ev.target.value.length)
-            setNewProjectName(ev.target.value)
+      <Header pre={<span></span>} title="Projects" />
+
+      <Main className="container">
+        {projects.map(project => (
+          <ProjectCard key={project.id} project={project} />
+        ))}
+
+        <form
+          onSubmit={ev => {
+            ev.preventDefault()
+            saveNewProject({ name: newProjectName })
+            setNewProjectName('')
+            setDisableAddProjectBtn(true)
           }}
-        />
-      </label>
-      <button
-        data-testid="save-project-btn"
-        disabled={disableAddProjectBtn}
-        onClick={() => {
-          saveNewProject({ name: newProjectName })
-          setNewProjectName('')
-          setDisableAddProjectBtn(true)
-        }}
-      >
-        Add project
-      </button>
+        >
+          <label htmlFor="new-project-input">New project</label>
+          <InputAndButton>
+            <input
+              id="new-project-input"
+              type="text"
+              data-testid="new-project-input"
+              value={newProjectName}
+              onChange={(ev: ChangeEvent<HTMLInputElement>) => {
+                setDisableAddProjectBtn(!ev.target.value.length)
+                setNewProjectName(ev.target.value)
+              }}
+            />
+            <button
+              className="button"
+              data-testid="save-project-btn"
+              disabled={disableAddProjectBtn}
+            >
+              Add project
+            </button>
+          </InputAndButton>
+        </form>
+      </Main>
     </>
   )
 }
