@@ -14,6 +14,12 @@ export const getHolidaysClass = (country: string): Holidays => {
   return hd
 }
 
+export const isWeekend = (date: Date): boolean => {
+  const day = date.getDay()
+
+  return [0, 6].includes(day)
+}
+
 export const calculateTaskLength = (task: Pick<Task, 'startDate' | 'length'>, hd: Holidays) => {
   let remainingDays = task.length
   let length = 0
@@ -21,7 +27,7 @@ export const calculateTaskLength = (task: Pick<Task, 'startDate' | 'length'>, hd
   while (remainingDays) {
     length++
 
-    if (![0, 6].includes(day.getDay()) && !hd.isHoliday(day)) {
+    if (!isWeekend(day) && !hd.isHoliday(day)) {
       remainingDays--
     }
 

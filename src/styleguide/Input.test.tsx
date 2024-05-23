@@ -7,4 +7,9 @@ describe('input', () => {
     render(<Input label="foo" />)
     expect(screen.getByRole('textbox', { name: 'foo' })).toBeInTheDocument()
   })
+
+  it('is invalid if there is an error', () => {
+    render(<Input label="foo" error="not allowed" />)
+    expect(screen.getByRole('textbox')).toBeInvalid()
+  })
 })

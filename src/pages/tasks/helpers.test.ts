@@ -13,6 +13,7 @@ import {
   getRandomColor,
   getTasksMonths,
   getTasksStartAndEndDates,
+  isWeekend,
 } from './helpers'
 
 const hd = new Holidays()
@@ -554,6 +555,20 @@ describe('calculateTaskBarStyle', () => {
       gridRowStart: 1,
       gridColumnStart: 32,
       gridColumnEnd: 'span 1',
+    })
+  })
+
+  describe('isWeekend', () => {
+    it('returns true if date is saturday', () => {
+      expect(isWeekend(new Date('2024-04-06'))).toBe(true)
+    })
+
+    it('returns true if date is sunday', () => {
+      expect(isWeekend(new Date('2024-04-07'))).toBe(true)
+    })
+
+    it('returns false if date is monday', () => {
+      expect(isWeekend(new Date('2024-04-08'))).toBe(false)
     })
   })
 })

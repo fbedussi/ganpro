@@ -3,8 +3,14 @@ import { Task } from '../../model/task'
 import { Button } from '../../styleguide/Button'
 import { Input } from '../../styleguide/Input'
 import { Select } from '../../styleguide/Select'
-import { ONE_DAY, calculateTaskLength, getHolidaysClass, getRandomColor } from './helpers'
-import React from 'react'
+import {
+  ONE_DAY,
+  calculateTaskLength,
+  getHolidaysClass,
+  getRandomColor,
+  isWeekend,
+} from './helpers'
+import React, { useState } from 'react'
 
 const Form = styled.form`
   display: grid;
@@ -34,6 +40,8 @@ const TaskData = ({
   saveTask: (task: Omit<Task, 'id'>) => void
   updateTask: (task: Task) => void
 }) => {
+  const [startDateError, setStartDateError] = useState('')
+
   return (
     <Form
       data-testid="task-details-form"
@@ -47,6 +55,12 @@ const TaskData = ({
         const dependenciesSelect = form.elements[4] as HTMLSelectElement
 
         const startDate = new Date(startInput.value)
+
+        if (isWeekend(startDate)) {
+          setStartDateError('Start date cannot be a weekend day')
+          return
+        }
+
         const length = Number(lengthInput.value)
         const effectiveLength = calculateTaskLength({ startDate, length }, hd)
         const endDate = new Date(startDate.getTime() + ONE_DAY * (effectiveLength - 1))
@@ -89,8 +103,13 @@ const TaskData = ({
       <Input
         label="Start date"
         type="date"
-        defaultValue={'startDate' in data ? data.startDate.toISOString().split('T')[0] : undefined}
+        defaultValue={
+          'startDate' in data
+            ? data.startDate.toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0]
+        }
         required
+        error={startDateError}
       />
       <Input
         label="Length"

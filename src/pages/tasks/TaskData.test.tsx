@@ -21,6 +21,25 @@ describe('TaskData', () => {
     expect(screen.getByRole('listbox', { name: /dependencies/i })).toBeInTheDocument()
   })
 
+  it('has the date pre populated with today', () => {
+    render(
+      <TaskData
+        data={{ name: 'task2', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+          } as Task,
+        ]}
+        saveTask={() => {}}
+        updateTask={() => {}}
+      />,
+    )
+    const startDateInput = screen.getByLabelText(/start date/i) as HTMLInputElement
+    expect(startDateInput.value).toEqual(new Date().toISOString().split('T')[0])
+  })
+
   it('the dependencies do not have a selected value', () => {
     render(
       <TaskData
@@ -214,6 +233,33 @@ describe('TaskData', () => {
       effectiveLength: 2,
       dependenciesId: [],
       color: 'red',
+    })
+  })
+
+  describe('task constraints', () => {
+    it('shows an error if start day is a weekend day and does not save data', async () => {
+      const saveTask = jest.fn()
+      const { user } = render(
+        <TaskData
+          data={{ name: 'task1', projId: 1 }}
+          projectTasks={[
+            {
+              name: 'task1',
+              id: 1,
+              projId: 1,
+            } as Task,
+          ]}
+          saveTask={saveTask}
+          updateTask={() => {}}
+        />,
+      )
+      await user.type(screen.getByLabelText(/start date/i), '2024-04-06')
+      const lengthInput = screen.getByLabelText(/length/i)
+      await user.clear(lengthInput)
+      await user.type(lengthInput, '2')
+      await user.click(screen.getByRole('button', { name: /save/i }))
+      expect(screen.getByLabelText(/start date/i)).toBeInvalid()
+      expect(saveTask).not.toHaveBeenCalled()
     })
   })
 })
