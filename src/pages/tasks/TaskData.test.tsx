@@ -262,4 +262,29 @@ describe('TaskData', () => {
       expect(saveTask).not.toHaveBeenCalled()
     })
   })
+
+  it('shows an error if start day is a holiday day and does not save data', async () => {
+    const saveTask = jest.fn()
+    const { user } = render(
+      <TaskData
+        data={{ name: 'task1', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+          } as Task,
+        ]}
+        saveTask={saveTask}
+        updateTask={() => {}}
+      />,
+    )
+    await user.type(screen.getByLabelText(/start date/i), '2024-04-25')
+    const lengthInput = screen.getByLabelText(/length/i)
+    await user.clear(lengthInput)
+    await user.type(lengthInput, '2')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    expect(screen.getByLabelText(/start date/i)).toBeInvalid()
+    expect(saveTask).not.toHaveBeenCalled()
+  })
 })

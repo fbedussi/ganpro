@@ -14,7 +14,8 @@ export const getHolidaysClass = (country: string): Holidays => {
   return hd
 }
 
-export const isWeekend = (date: Date): boolean => {
+export const isWeekend = (dateInput: Date | string): boolean => {
+  const date = new Date(dateInput)
   const day = date.getDay()
 
   return [0, 6].includes(day)

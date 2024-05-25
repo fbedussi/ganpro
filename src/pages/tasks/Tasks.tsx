@@ -111,7 +111,12 @@ export const _Tasks = ({
         }}
       >
         <TaskData
-          data={selectedTask || { projId: project.id, name: newTaskName }}
+          data={
+            selectedTask || {
+              projId: project.id,
+              name: newTaskName,
+            }
+          }
           projectTasks={tasks}
           saveTask={newTask => {
             setNewTaskName('')
