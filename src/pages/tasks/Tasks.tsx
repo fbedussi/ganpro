@@ -117,6 +117,7 @@ export const _Tasks = ({
               name: newTaskName,
             }
           }
+          key={selectedTask?.name || newTaskName}
           projectTasks={tasks}
           saveTask={newTask => {
             setNewTaskName('')

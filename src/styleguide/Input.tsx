@@ -38,6 +38,13 @@ export const Input = ({
             ref.current?.reportValidity()
           }
         }}
+        onChange={(...args) => {
+          if (validateOnBlur && validator) {
+            ref.current?.setCustomValidity('')
+            ref.current?.reportValidity()
+          }
+          props.onChange && props.onChange(...args)
+        }}
       />
     </Label>
   )

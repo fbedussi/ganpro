@@ -1,5 +1,5 @@
 import Holidays from 'date-holidays'
-import { Day, Dependency, Month, Task } from '../../model'
+import { Day, Dependency, Id, Month, Task } from '../../model'
 import { padNumber } from '../../helpers/utils'
 
 let hd: Holidays | undefined
@@ -179,4 +179,15 @@ export const calculateTaskBarStyle = (task: Task, taskIndex: number, days: Day[]
     gridColumnStart,
     gridColumnEnd: `span ${task.effectiveLength}`,
   }
+}
+
+export const getNonEndedDependencies = (
+  projectTasks: Task[],
+  dependenciesId: Id[],
+  startDate: Date | string,
+): Task[] => {
+  const startTimestamp = new Date(startDate).getTime()
+  return projectTasks
+    .filter(({ id }) => dependenciesId.includes(id))
+    .filter(({ endDate }) => endDate.getTime() >= startTimestamp)
 }

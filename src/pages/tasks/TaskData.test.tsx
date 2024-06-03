@@ -100,12 +100,19 @@ describe('TaskData', () => {
     const saveTask = jest.fn()
     const { user } = render(
       <TaskData
-        data={{ name: 'task1', projId: 1 }}
+        data={{ name: 'task3', projId: 1 }}
         projectTasks={[
           {
             name: 'task1',
             id: 1,
             projId: 1,
+            endDate: new Date('2024-04-02'),
+          } as Task,
+          {
+            name: 'task2',
+            id: 2,
+            projId: 1,
+            endDate: new Date('2024-04-02'),
           } as Task,
         ]}
         saveTask={saveTask}
@@ -118,16 +125,17 @@ describe('TaskData', () => {
     await user.type(lengthInput, '2')
     await user.type(screen.getByLabelText(/assignee/i), 'foo')
     await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '1')
+    await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '2')
     await user.click(screen.getByRole('button', { name: /save/i }))
     expect(saveTask).toHaveBeenCalledWith({
-      name: 'task1',
+      name: 'task3',
       projId: 1,
       startDate: new Date('2024-04-03'),
       endDate: new Date('2024-04-04'),
       length: 2,
       effectiveLength: 2,
       assignee: 'foo',
-      dependenciesId: [1],
+      dependenciesId: [1, 2],
       color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
     })
   })
@@ -144,6 +152,7 @@ describe('TaskData', () => {
             name: 'task1',
             id: 1,
             projId: 1,
+            endDate: new Date('2024-04-02'),
           } as Task,
         ]}
         saveTask={saveTask}
@@ -180,10 +189,42 @@ describe('TaskData', () => {
       assignee: 'foo',
       length: 1,
       effectiveLength: 1,
-      dependenciesId: [],
+      dependenciesId: [2, 3],
       color: 'red',
     }
-    render(<TaskData data={task} projectTasks={[]} saveTask={() => {}} updateTask={() => {}} />)
+    render(
+      <TaskData
+        data={task}
+        projectTasks={[
+          {
+            id: 2,
+            name: 'task2',
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-02'),
+            assignee: 'foo',
+            length: 1,
+            effectiveLength: 1,
+            dependenciesId: [],
+            color: 'blu',
+          },
+          {
+            id: 3,
+            name: 'task3',
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-02'),
+            assignee: 'foo',
+            length: 1,
+            effectiveLength: 1,
+            dependenciesId: [],
+            color: 'blu',
+          },
+        ]}
+        saveTask={() => {}}
+        updateTask={() => {}}
+      />,
+    )
     expect((screen.getByLabelText(/name/i) as HTMLInputElement).value).toBe(task.name)
     expect((screen.getByLabelText(/start date/i) as HTMLInputElement).value).toBe(
       task.startDate.toISOString().split('T')[0],
@@ -192,6 +233,66 @@ describe('TaskData', () => {
       task.length.toString(),
     )
     expect((screen.getByLabelText(/assignee/i) as HTMLInputElement).value).toBe(task.assignee)
+
+    expect(
+      Array.from((screen.getByLabelText(/dependencies/i) as HTMLSelectElement).selectedOptions).map(
+        o => o.value,
+      ),
+    ).toEqual(['2', '3'])
+  })
+
+  it('the selected task is not listed as a possible dependency', () => {
+    const task: Task = {
+      id: 1,
+      name: 'task1',
+      projId: 1,
+      startDate: new Date('2024-04-04'),
+      endDate: new Date('2024-04-04'),
+      assignee: 'foo',
+      length: 1,
+      effectiveLength: 1,
+      dependenciesId: [2, 3],
+      color: 'red',
+    }
+    render(
+      <TaskData
+        data={task}
+        projectTasks={[
+          task,
+          {
+            id: 2,
+            name: 'task2',
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-02'),
+            assignee: 'foo',
+            length: 1,
+            effectiveLength: 1,
+            dependenciesId: [],
+            color: 'blu',
+          },
+          {
+            id: 3,
+            name: 'task3',
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-02'),
+            assignee: 'foo',
+            length: 1,
+            effectiveLength: 1,
+            dependenciesId: [],
+            color: 'blu',
+          },
+        ]}
+        saveTask={() => {}}
+        updateTask={() => {}}
+      />,
+    )
+    expect(
+      Array.from((screen.getByLabelText(/dependencies/i) as HTMLSelectElement).options).map(
+        o => o.value,
+      ),
+    ).toEqual(['', '2', '3'])
   })
 
   it('updates the task', async () => {
@@ -285,6 +386,63 @@ describe('TaskData', () => {
     await user.type(lengthInput, '2')
     await user.click(screen.getByRole('button', { name: /save/i }))
     expect(screen.getByLabelText(/start date/i)).toBeInvalid()
+    expect(saveTask).not.toHaveBeenCalled()
+  })
+
+  it('the start date field is invalid if it is before the dependencies end', async () => {
+    const saveTask = jest.fn()
+    const { user } = render(
+      <TaskData
+        data={{ name: 'task2', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-03'),
+          } as Task,
+        ]}
+        saveTask={saveTask}
+        updateTask={() => {}}
+      />,
+    )
+    await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '1')
+    await user.type(screen.getByLabelText(/start date/i), '2024-04-02')
+    const lengthInput = screen.getByLabelText(/length/i)
+    await user.clear(lengthInput)
+    await user.type(lengthInput, '2')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(screen.getByLabelText(/start date/i)).toBeInvalid()
+    expect(saveTask).not.toHaveBeenCalled()
+  })
+
+  it('the dependencies field should be invalid if some dependency ends after the start date', async () => {
+    const saveTask = jest.fn()
+    const { user } = render(
+      <TaskData
+        data={{ name: 'task2', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-03'),
+          } as Task,
+        ]}
+        saveTask={saveTask}
+        updateTask={() => {}}
+      />,
+    )
+    await user.type(screen.getByLabelText(/start date/i), '2024-04-02')
+    await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '1')
+    const lengthInput = screen.getByLabelText(/length/i)
+    await user.clear(lengthInput)
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(screen.getByRole('listbox', { name: /dependencies/i })).toBeInvalid()
     expect(saveTask).not.toHaveBeenCalled()
   })
 })

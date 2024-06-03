@@ -10,6 +10,7 @@ import {
   getMonthDays,
   getMonthEnd,
   getMonthStart,
+  getNonEndedDependencies,
   getRandomColor,
   getTasksMonths,
   getTasksStartAndEndDates,
@@ -397,6 +398,49 @@ describe('getDependencies', () => {
       },
     ])
   })
+
+  it('return an empty array if there are no dependencies', () => {
+    const tasks: Task[] = [
+      {
+        id: 1,
+        projId: 1,
+        name: 'task1',
+        startDate: new Date('2024-04-04'),
+        endDate: new Date('2024-04-04'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'red',
+      },
+      {
+        id: 2,
+        projId: 1,
+        name: 'task2',
+        startDate: new Date('2024-04-05'),
+        endDate: new Date('2024-04-05'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'green',
+      },
+      {
+        id: 3,
+        projId: 1,
+        name: 'task2',
+        startDate: new Date('2024-04-07'),
+        endDate: new Date('2024-04-07'),
+        length: 1,
+        effectiveLength: 1,
+        assignee: 'me',
+        dependenciesId: [],
+        color: 'green',
+      },
+    ]
+
+    expect(getDependencies(tasks)).toEqual([])
+  })
 })
 
 describe('calculateDependencyStyle', () => {
@@ -570,5 +614,68 @@ describe('calculateTaskBarStyle', () => {
     it('returns false if date is monday', () => {
       expect(isWeekend(new Date('2024-04-08'))).toBe(false)
     })
+  })
+})
+
+describe('getNonEndedDependencies', () => {
+  it('returns an empty array if there are no dependencies', () => {
+    expect(getNonEndedDependencies([{ id: 1 } as Task], [], new Date())).toEqual([])
+  })
+
+  it('returns the list of dependencies that are not ended before the start date', () => {
+    const task1 = {
+      id: 1,
+      startDate: new Date('2020-04-01'),
+      endDate: new Date('2020-04-03'),
+    } as Task
+    expect(getNonEndedDependencies([task1], [task1.id], new Date('2020-04-02'))).toEqual([task1])
+  })
+
+  it('returns the list of tasks that are not ended before the start date, considering only the dependencies', () => {
+    const task1 = {
+      id: 1,
+      startDate: new Date('2020-04-01'),
+      endDate: new Date('2020-04-03'),
+    } as Task
+    const task2 = {
+      id: 2,
+      startDate: new Date('2020-04-01'),
+      endDate: new Date('2020-04-03'),
+    } as Task
+    expect(getNonEndedDependencies([task1, task2], [task1.id], new Date('2020-04-02'))).toEqual([
+      task1,
+    ])
+  })
+
+  it('returns the list of dependencies that are not ended before the start date, even if there are more than one', () => {
+    const task1 = {
+      id: 1,
+      startDate: new Date('2020-04-01'),
+      endDate: new Date('2020-04-03'),
+    } as Task
+    const task2 = {
+      id: 2,
+      startDate: new Date('2020-04-01'),
+      endDate: new Date('2020-04-03'),
+    } as Task
+    expect(
+      getNonEndedDependencies([task1, task2], [task1.id, task2.id], new Date('2020-04-02')),
+    ).toEqual([task1, task2])
+  })
+
+  it('returns even dependencies that ends in the same day as the startDate', () => {
+    const task1 = {
+      id: 1,
+      startDate: new Date('2020-04-01'),
+      endDate: new Date('2020-04-03'),
+    } as Task
+    const task2 = {
+      id: 2,
+      startDate: new Date('2020-04-01'),
+      endDate: new Date('2020-04-02'),
+    } as Task
+    expect(
+      getNonEndedDependencies([task1, task2], [task1.id, task2.id], new Date('2020-04-03')),
+    ).toEqual([task1])
   })
 })
