@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`queryIndexedDb Error handling Query a bad id 1`] = `[DataError: Data provided to an operation does not meet requirements.]`;
+
+exports[`queryIndexedDb Error handling querying a non existing store 1`] = `[NotFoundError: No objectStore named foo in this database]`;
