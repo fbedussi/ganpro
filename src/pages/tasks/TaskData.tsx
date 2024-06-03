@@ -3,8 +3,15 @@ import { Task } from '../../model/task'
 import { Button } from '../../styleguide/Button'
 import { Input } from '../../styleguide/Input'
 import { Select } from '../../styleguide/Select'
-import { ONE_DAY, calculateTaskLength, getHolidaysClass, getRandomColor } from './helpers'
-import React from 'react'
+import {
+  ONE_DAY,
+  calculateTaskLength,
+  getHolidaysClass,
+  getNonEndedDependencies,
+  getRandomColor,
+  isWeekend,
+} from './helpers'
+import React, { useState } from 'react'
 
 const Form = styled.form`
   display: grid;
@@ -34,78 +41,134 @@ const TaskData = ({
   saveTask: (task: Omit<Task, 'id'>) => void
   updateTask: (task: Task) => void
 }) => {
+  const [values, setValues] = useState({
+    name: data.name,
+    startDate: 'startDate' in data ? data.startDate : new Date(),
+    length: 'length' in data ? data.length : 1,
+    assignee: 'assignee' in data ? data.assignee : '',
+    dependenciesId: 'dependenciesId' in data ? data.dependenciesId : [],
+  })
+
   return (
     <Form
       data-testid="task-details-form"
       onSubmit={ev => {
         ev.preventDefault()
-        const form = ev.target as HTMLFormElement
-        const nameInput = form.elements[0] as HTMLInputElement
-        const startInput = form.elements[1] as HTMLInputElement
-        const lengthInput = form.elements[2] as HTMLInputElement
-        const assigneeInput = form.elements[3] as HTMLInputElement
-        const dependenciesSelect = form.elements[4] as HTMLSelectElement
-
-        const startDate = new Date(startInput.value)
-        const length = Number(lengthInput.value)
-        const effectiveLength = calculateTaskLength({ startDate, length }, hd)
-        const endDate = new Date(startDate.getTime() + ONE_DAY * (effectiveLength - 1))
+        const effectiveLength = calculateTaskLength(values, hd)
+        const endDate = new Date(values.startDate.getTime() + ONE_DAY * (effectiveLength - 1))
 
         if ('id' in data) {
           updateTask({
             ...data,
-            name: nameInput.value,
-            projId: data.projId,
-            startDate,
+            ...values,
             endDate,
-            length,
             effectiveLength,
-            assignee: assigneeInput.value,
-            dependenciesId: ([] as string[])
-              .concat(dependenciesSelect.value)
-              .filter(val => val !== '')
-              .map(n => Number(n)),
             color: 'color' in data ? data.color : getRandomColor(),
           })
         } else {
           saveTask({
-            name: nameInput.value,
-            projId: data.projId,
-            startDate,
+            ...data,
+            ...values,
             endDate,
-            length,
             effectiveLength,
-            assignee: assigneeInput.value,
-            dependenciesId: ([] as string[])
-              .concat(dependenciesSelect.value)
-              .filter(val => val !== '')
-              .map(n => Number(n)),
             color: getRandomColor(),
           })
         }
       }}
     >
-      <Input label="Name" defaultValue={data.name} required />
+      <Input
+        label="Name"
+        value={values.name}
+        required
+        onChange={ev =>
+          setValues({
+            ...values,
+            name: ev.currentTarget.value,
+          })
+        }
+      />
       <Input
         label="Start date"
         type="date"
-        defaultValue={'startDate' in data ? data.startDate.toISOString().split('T')[0] : undefined}
+        value={values.startDate.toISOString().split('T')[0]}
+        onChange={ev => {
+          setValues({
+            ...values,
+            startDate: new Date(ev.currentTarget.value),
+          })
+        }}
         required
+        validateOnBlur
+        validator={startDate => {
+          const nonEndedDependencies = getNonEndedDependencies(
+            projectTasks,
+            values.dependenciesId,
+            startDate,
+          )
+
+          const errors = [
+            isWeekend(startDate) && 'Start date cannot be a weekend day',
+            hd.isHoliday(startDate) && 'Start date cannot be a holiday',
+            !!nonEndedDependencies.length &&
+              'A task cannot start before the tasks it depends on are ended',
+          ]
+
+          const error = errors.find(error => typeof error === 'string') || ''
+
+          return error
+        }}
       />
       <Input
         label="Length"
+        name="length"
         type="number"
-        defaultValue={'length' in data ? data.length.toString() : '1'}
+        value={values.length.toString()}
+        onChange={ev => {
+          setValues({
+            ...values,
+            length: Number(ev.currentTarget.value),
+          })
+        }}
         required
       />
-      <Input label="Assignee" type="text" defaultValue={'assignee' in data ? data.assignee : ''} />
+      <Input
+        label="Assignee"
+        type="text"
+        value={values.assignee}
+        onChange={ev =>
+          setValues({
+            ...values,
+            assignee: ev.currentTarget.value,
+          })
+        }
+      />
       <Select
         label="Dependencies"
         multiple
-        defaultValue={'dependenciesId' in data ? data.dependenciesId.map(id => id.toString()) : []}
+        value={values.dependenciesId.map(id => id.toString())}
+        onChange={ev => {
+          setValues({
+            ...values,
+            dependenciesId: Array.from(ev.currentTarget.selectedOptions).map(o => Number(o.value)),
+          })
+        }}
         options={[{ value: '', label: '' }].concat(
-          projectTasks.map(({ name, id }) => ({ value: id.toString(), label: name })),
+          projectTasks
+            .filter(({ id }) => ('id' in data ? id !== data.id : true))
+            .map(({ name, id }) => ({ value: id.toString(), label: name })),
         )}
+        validator={dependenciesId => {
+          const nonEndedDependencies = getNonEndedDependencies(
+            projectTasks,
+            Array.from(dependenciesId).map(id => Number(id)),
+            values.startDate,
+          )
+
+          return nonEndedDependencies.length
+            ? nonEndedDependencies.map(({ name }) => `${name} ends after the task start`).join(', ')
+            : ''
+        }}
+        validateOnBlur
       />
 
       <Buttons>

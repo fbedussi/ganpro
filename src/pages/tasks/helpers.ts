@@ -1,5 +1,5 @@
 import Holidays from 'date-holidays'
-import { Day, Dependency, Month, Task } from '../../model'
+import { Day, Dependency, Id, Month, Task } from '../../model'
 import { padNumber } from '../../helpers/utils'
 
 let hd: Holidays | undefined
@@ -14,6 +14,13 @@ export const getHolidaysClass = (country: string): Holidays => {
   return hd
 }
 
+export const isWeekend = (dateInput: Date | string): boolean => {
+  const date = new Date(dateInput)
+  const day = date.getDay()
+
+  return [0, 6].includes(day)
+}
+
 export const calculateTaskLength = (task: Pick<Task, 'startDate' | 'length'>, hd: Holidays) => {
   let remainingDays = task.length
   let length = 0
@@ -21,7 +28,7 @@ export const calculateTaskLength = (task: Pick<Task, 'startDate' | 'length'>, hd
   while (remainingDays) {
     length++
 
-    if (![0, 6].includes(day.getDay()) && !hd.isHoliday(day)) {
+    if (!isWeekend(day) && !hd.isHoliday(day)) {
       remainingDays--
     }
 
@@ -172,4 +179,15 @@ export const calculateTaskBarStyle = (task: Task, taskIndex: number, days: Day[]
     gridColumnStart,
     gridColumnEnd: `span ${task.effectiveLength}`,
   }
+}
+
+export const getNonEndedDependencies = (
+  projectTasks: Task[],
+  dependenciesId: Id[],
+  startDate: Date | string,
+): Task[] => {
+  const startTimestamp = new Date(startDate).getTime()
+  return projectTasks
+    .filter(({ id }) => dependenciesId.includes(id))
+    .filter(({ endDate }) => endDate.getTime() >= startTimestamp)
 }
