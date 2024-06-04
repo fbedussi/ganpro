@@ -30,6 +30,8 @@ const Buttons = styled.div`
 
 const hd = getHolidaysClass('IT')
 
+const INVALID_START_DATE_ERROR = 'A task cannot start before the tasks it depends on are ended'
+
 const TaskData = ({
   data,
   projectTasks,
@@ -47,6 +49,11 @@ const TaskData = ({
     length: 'length' in data ? data.length : 1,
     assignee: 'assignee' in data ? data.assignee : '',
     dependenciesId: 'dependenciesId' in data ? data.dependenciesId : [],
+  })
+
+  const [errors, setErrors] = useState({
+    dependenciesId: '',
+    startDate: '',
   })
 
   return (
@@ -91,15 +98,10 @@ const TaskData = ({
         label="Start date"
         type="date"
         value={values.startDate.toISOString().split('T')[0]}
+        error={errors.startDate}
         onChange={ev => {
-          setValues({
-            ...values,
-            startDate: new Date(ev.currentTarget.value),
-          })
-        }}
-        required
-        validateOnBlur
-        validator={startDate => {
+          const startDate = new Date(ev.currentTarget.value)
+
           const nonEndedDependencies = getNonEndedDependencies(
             projectTasks,
             values.dependenciesId,
@@ -109,18 +111,25 @@ const TaskData = ({
           const errors = [
             isWeekend(startDate) && 'Start date cannot be a weekend day',
             hd.isHoliday(startDate) && 'Start date cannot be a holiday',
-            !!nonEndedDependencies.length &&
-              'A task cannot start before the tasks it depends on are ended',
+            !!nonEndedDependencies.length && INVALID_START_DATE_ERROR,
           ]
 
           const error = errors.find(error => typeof error === 'string') || ''
 
-          return error
+          setErrors(errors => ({
+            dependenciesId: !nonEndedDependencies.length ? '' : errors.dependenciesId,
+            startDate: error,
+          }))
+
+          setValues({
+            ...values,
+            startDate,
+          })
         }}
+        required
       />
       <Input
         label="Length"
-        name="length"
         type="number"
         value={values.length.toString()}
         onChange={ev => {
@@ -146,10 +155,34 @@ const TaskData = ({
         label="Dependencies"
         multiple
         value={values.dependenciesId.map(id => id.toString())}
+        error={errors.dependenciesId}
         onChange={ev => {
+          const dependenciesId = Array.from(ev.currentTarget.selectedOptions)
+            .filter(o => o.value !== '')
+            .map(o => Number(o.value))
+
+          const nonEndedDependencies = getNonEndedDependencies(
+            projectTasks,
+            dependenciesId,
+            values.startDate,
+          )
+
+          const error = nonEndedDependencies.length
+            ? nonEndedDependencies.map(({ name }) => `${name} ends after the task start`).join(', ')
+            : ''
+
+          setErrors({
+            startDate:
+              errors.startDate === INVALID_START_DATE_ERROR && !nonEndedDependencies.length
+                ? ''
+                : errors.startDate,
+
+            dependenciesId: error,
+          })
+
           setValues({
             ...values,
-            dependenciesId: Array.from(ev.currentTarget.selectedOptions).map(o => Number(o.value)),
+            dependenciesId,
           })
         }}
         options={[{ value: '', label: '' }].concat(
@@ -157,18 +190,6 @@ const TaskData = ({
             .filter(({ id }) => ('id' in data ? id !== data.id : true))
             .map(({ name, id }) => ({ value: id.toString(), label: name })),
         )}
-        validator={dependenciesId => {
-          const nonEndedDependencies = getNonEndedDependencies(
-            projectTasks,
-            Array.from(dependenciesId).map(id => Number(id)),
-            values.startDate,
-          )
-
-          return nonEndedDependencies.length
-            ? nonEndedDependencies.map(({ name }) => `${name} ends after the task start`).join(', ')
-            : ''
-        }}
-        validateOnBlur
       />
 
       <Buttons>

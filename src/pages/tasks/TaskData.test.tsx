@@ -140,6 +140,49 @@ describe('TaskData', () => {
     })
   })
 
+  it('saves the task, with empty dependenciesId if empty option is selected', async () => {
+    const saveTask = jest.fn()
+    const { user } = render(
+      <TaskData
+        data={{ name: 'task3', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+            endDate: new Date('2024-04-02'),
+          } as Task,
+          {
+            name: 'task2',
+            id: 2,
+            projId: 1,
+            endDate: new Date('2024-04-02'),
+          } as Task,
+        ]}
+        saveTask={saveTask}
+        updateTask={() => {}}
+      />,
+    )
+    await user.type(screen.getByLabelText(/start date/i), '2024-04-03')
+    const lengthInput = screen.getByLabelText(/length/i)
+    await user.clear(lengthInput)
+    await user.type(lengthInput, '2')
+    await user.type(screen.getByLabelText(/assignee/i), 'foo')
+    await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+    expect(saveTask).toHaveBeenCalledWith({
+      name: 'task3',
+      projId: 1,
+      startDate: new Date('2024-04-03'),
+      endDate: new Date('2024-04-04'),
+      length: 2,
+      effectiveLength: 2,
+      assignee: 'foo',
+      dependenciesId: [],
+      color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
+    })
+  })
+
   it('saves the task, calculating the end date considering weekends and holidays', async () => {
     const user = userEvent.setup()
 
@@ -443,6 +486,125 @@ describe('TaskData', () => {
     await user.click(screen.getByRole('button', { name: /save/i }))
 
     expect(screen.getByRole('listbox', { name: /dependencies/i })).toBeInvalid()
+    expect(saveTask).not.toHaveBeenCalled()
+  })
+
+  it('a change in start date resets the invalidity of dependencies', async () => {
+    const saveTask = jest.fn()
+    const { user } = render(
+      <TaskData
+        data={{ name: 'task2', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-03'),
+          } as Task,
+        ]}
+        saveTask={saveTask}
+        updateTask={() => {}}
+      />,
+    )
+    const startDateInput = screen.getByLabelText(/start date/i)
+    await user.type(startDateInput, '2024-04-02')
+    await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '1')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(screen.getByRole('listbox', { name: /dependencies/i })).toBeInvalid()
+    expect(saveTask).not.toHaveBeenCalled()
+
+    await user.type(startDateInput, '2024-04-04')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(screen.getByRole('listbox', { name: /dependencies/i })).not.toBeInvalid()
+    expect(saveTask).toHaveBeenCalled()
+  })
+
+  it('a change in the dependencies resets the invalidity of start date', async () => {
+    const saveTask = jest.fn()
+    const { user } = render(
+      <TaskData
+        data={{ name: 'task2', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-03'),
+          } as Task,
+          {
+            name: 'task3',
+            id: 3,
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-01'),
+          } as Task,
+        ]}
+        saveTask={saveTask}
+        updateTask={() => {}}
+      />,
+    )
+    const startDateInput = screen.getByLabelText(/start date/i)
+    const dependenciesInput = screen.getByRole('listbox', { name: /dependencies/i })
+    await user.selectOptions(dependenciesInput, '1')
+    await user.type(startDateInput, '2024-04-02')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(startDateInput).toBeInvalid()
+    expect(saveTask).not.toHaveBeenCalled()
+
+    await user.deselectOptions(dependenciesInput, '1')
+    await user.selectOptions(dependenciesInput, '3')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(dependenciesInput).toBeValid()
+    expect(startDateInput).toBeValid()
+    expect(saveTask).toHaveBeenCalled()
+  })
+
+  it('a change in the dependencies does not reset the invalidity of start date if it is invalid because it is a weekend', async () => {
+    const saveTask = jest.fn()
+    const { user } = render(
+      <TaskData
+        data={{ name: 'task2', projId: 1 }}
+        projectTasks={[
+          {
+            name: 'task1',
+            id: 1,
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-03'),
+          } as Task,
+          {
+            name: 'task3',
+            id: 3,
+            projId: 1,
+            startDate: new Date('2024-04-01'),
+            endDate: new Date('2024-04-01'),
+          } as Task,
+        ]}
+        saveTask={saveTask}
+        updateTask={() => {}}
+      />,
+    )
+    const startDateInput = screen.getByLabelText(/start date/i)
+    const dependenciesInput = screen.getByRole('listbox', { name: /dependencies/i })
+    await user.selectOptions(dependenciesInput, '1')
+    await user.type(startDateInput, '2024-04-06')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(startDateInput).toBeInvalid()
+    expect(saveTask).not.toHaveBeenCalled()
+
+    await user.deselectOptions(dependenciesInput, '1')
+    await user.selectOptions(dependenciesInput, '3')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(dependenciesInput).toBeValid()
+    expect(startDateInput).toBeInvalid()
     expect(saveTask).not.toHaveBeenCalled()
   })
 })
