@@ -10,6 +10,7 @@ import {
   getNonEndedDependencies,
   getRandomColor,
   isWeekend,
+  taskEndsAfterDependantTasks,
 } from './helpers'
 import React, { useState } from 'react'
 
@@ -56,7 +57,31 @@ const TaskData = ({
     startDate: '',
   })
 
-  return (
+  const [dependenciesToBeFixed, setDependenciesToBeFixed] = useState<Task[]>([])
+
+  return dependenciesToBeFixed.length ? (
+    <div data-testid="dependency-warning">
+      <div>These tasks starts before this task ends:</div>
+      <table>
+        <thead>
+          <tr>
+            <td>Task Name</td>
+            <td>Start Date</td>
+          </tr>
+        </thead>
+        <tbody>
+          {dependenciesToBeFixed.map(({ id, name, startDate }) => (
+            <tr key={id}>
+              <td>{name}</td>
+              <td>{startDate.toISOString().split('T')[0]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div>Their start date will be moved ahead.</div>
+      <Button onClick={() => setDependenciesToBeFixed([])}>OK</Button>
+    </div>
+  ) : (
     <Form
       data-testid="task-details-form"
       onSubmit={ev => {
@@ -65,13 +90,19 @@ const TaskData = ({
         const endDate = new Date(values.startDate.getTime() + ONE_DAY * (effectiveLength - 1))
 
         if ('id' in data) {
-          updateTask({
-            ...data,
-            ...values,
-            endDate,
-            effectiveLength,
-            color: 'color' in data ? data.color : getRandomColor(),
-          })
+          const dependenciesToBeFixed = taskEndsAfterDependantTasks(data.id, endDate, projectTasks)
+
+          if (dependenciesToBeFixed.length) {
+            setDependenciesToBeFixed(dependenciesToBeFixed)
+          } else {
+            updateTask({
+              ...data,
+              ...values,
+              endDate,
+              effectiveLength,
+              color: 'color' in data ? data.color : getRandomColor(),
+            })
+          }
         } else {
           saveTask({
             ...data,

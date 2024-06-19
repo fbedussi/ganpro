@@ -3,6 +3,7 @@ import { Task } from '../../model/task'
 import { render, screen } from '../../test-utils'
 import TaskData from './TaskData'
 import React from 'react'
+import { mockTask } from '../../mocks/task'
 
 describe('TaskData', () => {
   it('shows the task fields', () => {
@@ -26,11 +27,11 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
-          } as Task,
+          }),
         ]}
         saveTask={() => {}}
         updateTask={() => {}}
@@ -45,11 +46,11 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
-          } as Task,
+          }),
         ]}
         saveTask={() => {}}
         updateTask={() => {}}
@@ -66,11 +67,11 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
-          } as Task,
+          }),
         ]}
         saveTask={() => {}}
         updateTask={() => {}}
@@ -102,18 +103,18 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task3', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             endDate: new Date('2024-04-02'),
-          } as Task,
-          {
+          }),
+          mockTask({
             name: 'task2',
             id: 2,
             projId: 1,
             endDate: new Date('2024-04-02'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -146,18 +147,18 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task3', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             endDate: new Date('2024-04-02'),
-          } as Task,
-          {
+          }),
+          mockTask({
             name: 'task2',
             id: 2,
             projId: 1,
             endDate: new Date('2024-04-02'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -191,12 +192,12 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task1', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             endDate: new Date('2024-04-02'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -223,7 +224,7 @@ describe('TaskData', () => {
   })
 
   it('is populated with the task data, if a task is passed', () => {
-    const task: Task = {
+    const task = mockTask({
       id: 1,
       name: 'task1',
       projId: 1,
@@ -234,12 +235,12 @@ describe('TaskData', () => {
       effectiveLength: 1,
       dependenciesId: [2, 3],
       color: 'red',
-    }
+    })
     render(
       <TaskData
         data={task}
         projectTasks={[
-          {
+          mockTask({
             id: 2,
             name: 'task2',
             projId: 1,
@@ -248,10 +249,9 @@ describe('TaskData', () => {
             assignee: 'foo',
             length: 1,
             effectiveLength: 1,
-            dependenciesId: [],
             color: 'blu',
-          },
-          {
+          }),
+          mockTask({
             id: 3,
             name: 'task3',
             projId: 1,
@@ -260,9 +260,8 @@ describe('TaskData', () => {
             assignee: 'foo',
             length: 1,
             effectiveLength: 1,
-            dependenciesId: [],
             color: 'blu',
-          },
+          }),
         ]}
         saveTask={() => {}}
         updateTask={() => {}}
@@ -285,7 +284,7 @@ describe('TaskData', () => {
   })
 
   it('the selected task is not listed as a possible dependency', () => {
-    const task: Task = {
+    const task = mockTask({
       id: 1,
       name: 'task1',
       projId: 1,
@@ -296,13 +295,13 @@ describe('TaskData', () => {
       effectiveLength: 1,
       dependenciesId: [2, 3],
       color: 'red',
-    }
+    })
     render(
       <TaskData
         data={task}
         projectTasks={[
           task,
-          {
+          mockTask({
             id: 2,
             name: 'task2',
             projId: 1,
@@ -313,8 +312,8 @@ describe('TaskData', () => {
             effectiveLength: 1,
             dependenciesId: [],
             color: 'blu',
-          },
-          {
+          }),
+          mockTask({
             id: 3,
             name: 'task3',
             projId: 1,
@@ -325,7 +324,7 @@ describe('TaskData', () => {
             effectiveLength: 1,
             dependenciesId: [],
             color: 'blu',
-          },
+          }),
         ]}
         saveTask={() => {}}
         updateTask={() => {}}
@@ -339,7 +338,7 @@ describe('TaskData', () => {
   })
 
   it('updates the task', async () => {
-    const task: Task = {
+    const task = mockTask({
       id: 1,
       name: 'task1',
       projId: 1,
@@ -350,7 +349,7 @@ describe('TaskData', () => {
       effectiveLength: 1,
       dependenciesId: [],
       color: 'red',
-    }
+    })
 
     const updateTask = jest.fn()
     const { user } = render(
@@ -438,13 +437,13 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             startDate: new Date('2024-04-01'),
             endDate: new Date('2024-04-03'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -467,13 +466,13 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             startDate: new Date('2024-04-01'),
             endDate: new Date('2024-04-03'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -495,13 +494,13 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             startDate: new Date('2024-04-01'),
             endDate: new Date('2024-04-03'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -528,20 +527,20 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             startDate: new Date('2024-04-01'),
             endDate: new Date('2024-04-03'),
-          } as Task,
-          {
+          }),
+          mockTask({
             name: 'task3',
             id: 3,
             projId: 1,
             startDate: new Date('2024-04-01'),
             endDate: new Date('2024-04-01'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -571,20 +570,20 @@ describe('TaskData', () => {
       <TaskData
         data={{ name: 'task2', projId: 1 }}
         projectTasks={[
-          {
+          mockTask({
             name: 'task1',
             id: 1,
             projId: 1,
             startDate: new Date('2024-04-01'),
             endDate: new Date('2024-04-03'),
-          } as Task,
-          {
+          }),
+          mockTask({
             name: 'task3',
             id: 3,
             projId: 1,
             startDate: new Date('2024-04-01'),
             endDate: new Date('2024-04-01'),
-          } as Task,
+          }),
         ]}
         saveTask={saveTask}
         updateTask={() => {}}
@@ -606,5 +605,64 @@ describe('TaskData', () => {
     expect(dependenciesInput).toBeValid()
     expect(startDateInput).toBeInvalid()
     expect(saveTask).not.toHaveBeenCalled()
+  })
+})
+
+describe('Auto move dependant tasks', () => {
+  it('sets the dependant tasks to be moved, if any', async () => {
+    const saveTask = jest.fn()
+    const tasks = [
+      mockTask({
+        name: 'task1',
+        id: 1,
+        projId: 1,
+        startDate: new Date('2024-04-01'),
+        endDate: new Date('2024-04-02'),
+      }),
+      mockTask({
+        name: 'task2',
+        id: 3,
+        projId: 1,
+        startDate: new Date('2024-04-03'),
+        endDate: new Date('2024-04-04'),
+        dependenciesId: [1],
+      }),
+    ]
+    const { user } = render(
+      <TaskData data={tasks[0]} projectTasks={tasks} saveTask={saveTask} updateTask={() => {}} />,
+    )
+    const lengthInput = screen.getByLabelText(/length/i)
+    await user.type(lengthInput, '3')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(screen.getByTestId('dependency-warning')).toBeInTheDocument()
+  })
+
+  it('does not set the dependant tasks to be moved, if none', async () => {
+    const saveTask = jest.fn()
+    const tasks = [
+      mockTask({
+        name: 'task1',
+        id: 1,
+        projId: 1,
+        startDate: new Date('2024-04-01'),
+        endDate: new Date('2024-04-02'),
+      }),
+      mockTask({
+        name: 'task2',
+        id: 3,
+        projId: 1,
+        startDate: new Date('2024-04-03'),
+        endDate: new Date('2024-04-04'),
+      }),
+    ]
+    const { user } = render(
+      <TaskData data={tasks[0]} projectTasks={tasks} saveTask={saveTask} updateTask={() => {}} />,
+    )
+    const lengthInput = screen.getByLabelText(/length/i)
+    await user.type(lengthInput, '2')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    expect(await screen.queryByTestId('dependency-warning')).not.toBeInTheDocument()
   })
 })

@@ -47,7 +47,7 @@ describe('tasks page', () => {
 
   it('displays the title', () => {
     render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
-    expect(screen.getByText(/tasks/i)).toBeInTheDocument()
+    expect(screen.getByText('proj1 tasks')).toBeInTheDocument()
   })
 
   it('displays the project name', () => {
