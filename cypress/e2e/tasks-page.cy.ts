@@ -4,7 +4,7 @@ import { Project, Task } from '../../src/model'
 const proj1 = 'proj1'
 let projId: number | undefined
 
-const task1Name = 'task1'
+let task1Name = 'task1'
 const task2 = 'task2'
 let task1Id: number | undefined
 
@@ -94,27 +94,27 @@ describe('Add a task to a project', () => {
 })
 
 describe('Show the calendar', () => {
-  it('The calendar show the the day of the earlier task', async () => {
+  it('The calendar show the the day of the earlier task', () => {
     cy.visit(`/ganpro/projects/${projId}`)
     cy.get('[data-testid="calendar"] [data-testid="2024-04-04"]')
   })
 
-  it('The calendar has a taskbar for every task', async () => {
+  it('The calendar has a taskbar for every task', () => {
     cy.visit(`/ganpro/projects/${projId}`)
     cy.get(`[data-testid="calendar"] [data-testid="task-${task1Id}_bar"]`)
   })
 })
 
 describe('Open Task details', () => {
-  it('opens the modal', async () => {
+  it('opens the modal', () => {
     cy.visit(`/ganpro/projects/${projId}`)
     cy.contains(task1Name).click()
     cy.get('dialog').should('be.visible')
   })
 
-  it('the modal is populated with task data', async () => {
+  it('the modal is populated with task data', () => {
     cy.visit(`/ganpro/projects/${projId}`)
-    cy.contains(task1Name).click()
+    cy.get('[data-testid="task-task1"]').click()
     cy.get('form')
       .contains('label', /start date/i)
       .find('input')
@@ -129,26 +129,27 @@ describe('Open Task details', () => {
       .should('have.value', taskData.assignee)
   })
 
-  it('reopens the task details form', async () => {
+  it('reopens the task details form', () => {
     cy.visit(`/ganpro/projects/${projId}`)
-    cy.get(task1Name).click()
+    cy.get('[data-testid="task-task1"]').click()
     cy.get('[data-testid="task-details-form"]').should('be.visible')
     cy.get('[data-testid="close-button"]').click()
     cy.get('[data-testid="task-details-form"]').should('not.be.visible')
-    cy.get(task1Name).click()
+    cy.get('[data-testid="task-task1"]').click()
     cy.get('[data-testid="task-details-form"]').should('be.visible')
   })
 })
 
 describe('updates a task', () => {
-  it('updates the task data, after the task update the modal il closed and can be reopened', async () => {
+  it('updates the task data, after the task update the modal il closed and can be reopened', () => {
+    task1Name = 'task1_bis'
     cy.visit(`/ganpro/projects/${projId}`)
-    cy.get(task1Name).click()
+    cy.get('[data-testid="task-task1"]').click()
     cy.get('[data-testid="task-details-form"]')
       .contains('label', /name/i)
       .find('input')
       .clear()
-      .type('task1_bis')
+      .type(task1Name)
     cy.get('button[type="submit"]').click()
     cy.get('[data-testid="task-details-form"]').should('not.be.visible')
     cy.contains('task1_bis').click()
@@ -157,7 +158,7 @@ describe('updates a task', () => {
 })
 
 describe('back button', () => {
-  it('leads to the home page', async () => {
+  it('leads to the home page', () => {
     cy.visit(`/ganpro/projects/${projId}`)
     cy.get('[data-testid="back-button"]').click()
     cy.location('pathname').should('eq', '/ganpro')
@@ -165,7 +166,7 @@ describe('back button', () => {
 })
 
 describe('task constraints', () => {
-  it('cannot start a task in a non working day', async () => {
+  it('cannot start a task in a non working day', () => {
     cy.visit(`/ganpro/projects/${projId}`)
     cy.get('[data-testid="new-task-input"]').type('task4')
     cy.get('[data-testid="add-task-btn"]').click()
@@ -183,7 +184,7 @@ describe('task constraints', () => {
       .should('equal', 'Start date cannot be a weekend day')
   })
 
-  it('cannot start a task before the task it depends on ends', async () => {
+  it('cannot start a task before the task it depends on ends', () => {
     cy.visit(`/ganpro/projects/${projId}`)
     cy.get('[data-testid="new-task-input"]').type('task4')
     cy.get('[data-testid="add-task-btn"]').click()
@@ -195,10 +196,25 @@ describe('task constraints', () => {
       .contains('label', /length/i)
       .find('input')
       .type(task1Id!.toString())
+    cy.get('select').select(task1Id!.toString())
 
     cy.get('button[type="submit"]').click()
-    cy.contains(
-      `A task cannot start before the tasks it depends on are ended. ${task1Name} ends on ${taskData.startDate}`,
-    )
+    cy.get('select:invalid').should('have.length', 1)
+    cy.get('select:invalid')
+      .invoke('prop', 'validationMessage')
+      .should('equal', `${task1Name} ends after the task starts`)
+  })
+})
+
+describe('auto move dependent task', () => {
+  it('show an alert when a task end date is changed and is after the start date of a dependant task', () => {
+    cy.visit(`/ganpro/projects/${projId}`)
+    cy.get('[data-testid="task-task1_bis"]').click()
+    cy.get('[data-testid="task-details-form"]')
+      .contains('label', /length/i)
+      .find('input')
+      .type('3')
+    cy.get('button[type="submit"]').click()
+    cy.get('[data-testid="dependency-warning"]').should('be.visible')
   })
 })

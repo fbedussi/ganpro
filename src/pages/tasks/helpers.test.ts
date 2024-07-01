@@ -1,5 +1,5 @@
 import Holidays from 'date-holidays'
-import { Day, Dependency, Task } from '../../model'
+import { Day, Dependency, Id, Task } from '../../model'
 import {
   calculateDependencyStyle,
   calculateTaskBarStyle,
@@ -15,6 +15,7 @@ import {
   getTasksMonths,
   getTasksStartAndEndDates,
   isWeekend,
+  taskEndsAfterDependantTasks,
 } from './helpers'
 
 const hd = new Holidays()
@@ -677,5 +678,32 @@ describe('getNonEndedDependencies', () => {
     expect(
       getNonEndedDependencies([task1, task2], [task1.id, task2.id], new Date('2020-04-03')),
     ).toEqual([task1])
+  })
+})
+
+describe('taskEndsAfterDependantTasks', () => {
+  it('returns [] if there are no dependencies', () => {
+    expect(
+      taskEndsAfterDependantTasks(3, new Date('2024-04-01'), [
+        { id: 1, dependenciesId: [] as Id[] } as Task,
+        { id: 2, dependenciesId: [] as Id[] } as Task,
+      ]),
+    ).toEqual([])
+  })
+
+  it('returns the dependencies that start before the end date', () => {
+    const tasks = [
+      { id: 1, startDate: new Date('2024-04-03'), dependenciesId: [] as Id[] } as Task,
+      { id: 2, startDate: new Date('2024-04-01'), dependenciesId: [3] } as Task,
+    ]
+    expect(taskEndsAfterDependantTasks(3, new Date('2024-04-02'), tasks)).toEqual([tasks[1]])
+  })
+
+  it('ignore tasks that are not dependencies', () => {
+    const tasks = [
+      { id: 1, startDate: new Date('2024-04-03'), dependenciesId: [3] } as Task,
+      { id: 2, startDate: new Date('2024-04-01'), dependenciesId: [] as Id[] } as Task,
+    ]
+    expect(taskEndsAfterDependantTasks(3, new Date('2024-04-02'), tasks)).toEqual([])
   })
 })

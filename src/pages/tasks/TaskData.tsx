@@ -10,8 +10,10 @@ import {
   getNonEndedDependencies,
   getRandomColor,
   isWeekend,
+  taskEndsAfterDependantTasks,
 } from './helpers'
 import React, { useState } from 'react'
+import DependencyWarning from './DependencyWarning'
 
 const Form = styled.form`
   display: grid;
@@ -56,28 +58,86 @@ const TaskData = ({
     startDate: '',
   })
 
-  return (
-    <Form
-      data-testid="task-details-form"
-      onSubmit={ev => {
-        ev.preventDefault()
-        const effectiveLength = calculateTaskLength(values, hd)
-        const endDate = new Date(values.startDate.getTime() + ONE_DAY * (effectiveLength - 1))
+  const [dependenciesToBeFixed, setDependenciesToBeFixed] = useState<Task[]>([])
+
+  const taskEffectiveLength = calculateTaskLength(values, hd)
+  const taskEndDate = new Date(values.startDate.getTime() + ONE_DAY * (taskEffectiveLength - 1))
+
+  return dependenciesToBeFixed.length ? (
+    <DependencyWarning
+      taskName={data.name}
+      taskEndDate={taskEndDate}
+      dependenciesToBeFixed={dependenciesToBeFixed}
+      onOk={() => {
+        dependenciesToBeFixed.forEach(dependency => {
+          const startDate = new Date(taskEndDate.getTime() + ONE_DAY)
+          const effectiveLength = calculateTaskLength(
+            {
+              ...dependency,
+              startDate,
+            },
+            hd,
+          )
+          const endDate = new Date(startDate.getTime() + ONE_DAY * (effectiveLength - 1))
+
+          updateTask({
+            ...dependency,
+            startDate,
+            endDate,
+            effectiveLength,
+          })
+        })
 
         if ('id' in data) {
           updateTask({
             ...data,
             ...values,
-            endDate,
-            effectiveLength,
+            endDate: taskEndDate,
+            effectiveLength: taskEffectiveLength,
             color: 'color' in data ? data.color : getRandomColor(),
           })
         } else {
           saveTask({
             ...data,
             ...values,
-            endDate,
-            effectiveLength,
+            endDate: taskEndDate,
+            effectiveLength: taskEffectiveLength,
+            color: getRandomColor(),
+          })
+        }
+
+        setDependenciesToBeFixed([])
+      }}
+    />
+  ) : (
+    <Form
+      data-testid="task-details-form"
+      onSubmit={ev => {
+        ev.preventDefault()
+        if ('id' in data) {
+          const dependenciesToBeFixed = taskEndsAfterDependantTasks(
+            data.id,
+            taskEndDate,
+            projectTasks,
+          )
+
+          if (dependenciesToBeFixed.length) {
+            setDependenciesToBeFixed(dependenciesToBeFixed)
+          } else {
+            updateTask({
+              ...data,
+              ...values,
+              endDate: taskEndDate,
+              effectiveLength: taskEffectiveLength,
+              color: 'color' in data ? data.color : getRandomColor(),
+            })
+          }
+        } else {
+          saveTask({
+            ...data,
+            ...values,
+            endDate: taskEndDate,
+            effectiveLength: taskEffectiveLength,
             color: getRandomColor(),
           })
         }
@@ -168,7 +228,9 @@ const TaskData = ({
           )
 
           const error = nonEndedDependencies.length
-            ? nonEndedDependencies.map(({ name }) => `${name} ends after the task start`).join(', ')
+            ? nonEndedDependencies
+                .map(({ name }) => `${name} ends after the task starts`)
+                .join(', ')
             : ''
 
           setErrors({
