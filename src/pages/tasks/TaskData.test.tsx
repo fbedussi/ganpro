@@ -665,4 +665,54 @@ describe('Auto move dependant tasks', () => {
 
     expect(await screen.queryByTestId('dependency-warning')).not.toBeInTheDocument()
   })
+
+  it('updates the dependencies and saves the task when the ok button in the dependencies warning is clicked', async () => {
+    const saveTask = jest.fn()
+    const updateTask = jest.fn()
+    const tasks = [
+      mockTask({
+        name: 'task1',
+        id: 1,
+        projId: 1,
+        startDate: new Date('2024-04-08'),
+        endDate: new Date('2024-04-08'),
+      }),
+      mockTask({
+        name: 'task2',
+        id: 3,
+        projId: 1,
+        startDate: new Date('2024-04-09'),
+        endDate: new Date('2024-04-09'),
+        dependenciesId: [1],
+      }),
+    ]
+    const { user } = render(
+      <TaskData data={tasks[0]} projectTasks={tasks} saveTask={saveTask} updateTask={updateTask} />,
+    )
+    const lengthInput = screen.getByLabelText(/length/i)
+    await user.clear(lengthInput)
+    await user.type(lengthInput, '2')
+    await user.click(screen.getByRole('button', { name: /save/i }))
+
+    await user.click(screen.getByTestId('fix-dependencies-button'))
+
+    expect(updateTask).toHaveBeenNthCalledWith(
+      1,
+      mockTask({
+        ...tasks[1],
+        startDate: new Date('2024-04-10'),
+        endDate: new Date('2024-04-10'),
+        dependenciesId: [1],
+      }),
+    )
+    expect(updateTask).toHaveBeenNthCalledWith(
+      2,
+      mockTask({
+        ...tasks[0],
+        endDate: new Date('2024-04-09'),
+        length: 2,
+        effectiveLength: 2,
+      }),
+    )
+  })
 })

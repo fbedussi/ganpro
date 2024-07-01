@@ -202,7 +202,7 @@ describe('task constraints', () => {
     cy.get('select:invalid').should('have.length', 1)
     cy.get('select:invalid')
       .invoke('prop', 'validationMessage')
-      .should('equal', `${task1Name} ends after the task start`)
+      .should('equal', `${task1Name} ends after the task starts`)
   })
 })
 
