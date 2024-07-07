@@ -2,7 +2,7 @@ const dbName = 'ganpro'
 
 let db: IDBDatabase | undefined = undefined
 
-export const _openDb = async (dbName: string): Promise<IDBDatabase> => {
+export const _openDb = async (dbName: string, indexedDB: IDBFactory): Promise<IDBDatabase> => {
   return db
     ? Promise.resolve(db)
     : new Promise((res, rej) => {
@@ -24,8 +24,8 @@ export const _openDb = async (dbName: string): Promise<IDBDatabase> => {
       })
 }
 
-export const queryIndexedDb = (entityName: string) => {
-  const db = _openDb(dbName)
+export const queryIndexedDb = (entityName: string, indexedDB = window.indexedDB) => {
+  const db = _openDb(dbName, indexedDB)
 
   type FetchBaseQueryResult<T> = Promise<
     | {

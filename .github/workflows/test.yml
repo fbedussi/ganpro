@@ -11,8 +11,13 @@ jobs:
         run: npm ci
       - name: Unit Tests
         run: npm run test --watchAll=false
-      - name: E2E Tests
-        uses: cypress-io/github-action@v6
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
-          start: npm start
-          wait-on: 'http://localhost:3500'
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
