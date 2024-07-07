@@ -123,7 +123,7 @@ const Modal = ({
     >
       <Content>
         <CloseButtonWrapper>
-          <button data-testid="close-button" className="outline" onClick={close}>
+          <button data-testid="modal-close-button" className="outline" onClick={close}>
             <CloseIcon />
           </button>
         </CloseButtonWrapper>
