@@ -191,3 +191,11 @@ export const getNonEndedDependencies = (
     .filter(({ id }) => dependenciesId.includes(id))
     .filter(({ endDate }) => endDate.getTime() >= startTimestamp)
 }
+
+export const taskEndsAfterDependantTasks = (taskId: Id, endDate: Date, projectTasks: Task[]) => {
+  const a = projectTasks.filter(
+    ({ startDate, dependenciesId }) =>
+      dependenciesId.includes(taskId) && startDate.getTime() <= endDate.getTime(),
+  )
+  return a
+}

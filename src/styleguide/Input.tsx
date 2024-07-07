@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { HTMLProps } from 'react'
 import styled from 'styled-components'
 
@@ -14,38 +14,23 @@ const Label = styled.label`
 
 export const Input = ({
   label,
-  validator,
-  validateOnBlur,
+  error,
   ...props
 }: {
   label?: string
-  validator?: (value: string) => string
-  validateOnBlur?: boolean
+  error?: string
 } & HTMLProps<HTMLInputElement>) => {
   const ref = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    ref.current?.setCustomValidity(error || '')
+    ref.current?.reportValidity()
+  }, [error])
 
   return (
     <Label>
       {!!label && <span>{label}</span>}
-      <input
-        {...props}
-        ref={ref}
-        onFocus={ev => ev.target.select()}
-        onBlur={ev => {
-          if (validateOnBlur && validator) {
-            const error = validator(ev.target.value)
-            ref.current?.setCustomValidity(error || '')
-            ref.current?.reportValidity()
-          }
-        }}
-        onChange={(...args) => {
-          if (validateOnBlur && validator) {
-            ref.current?.setCustomValidity('')
-            ref.current?.reportValidity()
-          }
-          props.onChange && props.onChange(...args)
-        }}
-      />
+      <input {...props} ref={ref} onFocus={ev => ev.target.select()} />
     </Label>
   )
 }

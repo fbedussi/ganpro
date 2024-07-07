@@ -10,8 +10,10 @@ import {
   getNonEndedDependencies,
   getRandomColor,
   isWeekend,
+  taskEndsAfterDependantTasks,
 } from './helpers'
 import React, { useState } from 'react'
+import DependencyWarning from './DependencyWarning'
 
 const Form = styled.form`
   display: grid;
@@ -29,6 +31,8 @@ const Buttons = styled.div`
 `
 
 const hd = getHolidaysClass('IT')
+
+const INVALID_START_DATE_ERROR = 'A task cannot start before the tasks it depends on are ended'
 
 const TaskData = ({
   data,
@@ -49,28 +53,91 @@ const TaskData = ({
     dependenciesId: 'dependenciesId' in data ? data.dependenciesId : [],
   })
 
-  return (
-    <Form
-      data-testid="task-details-form"
-      onSubmit={ev => {
-        ev.preventDefault()
-        const effectiveLength = calculateTaskLength(values, hd)
-        const endDate = new Date(values.startDate.getTime() + ONE_DAY * (effectiveLength - 1))
+  const [errors, setErrors] = useState({
+    dependenciesId: '',
+    startDate: '',
+  })
+
+  const [dependenciesToBeFixed, setDependenciesToBeFixed] = useState<Task[]>([])
+
+  const taskEffectiveLength = calculateTaskLength(values, hd)
+  const taskEndDate = new Date(values.startDate.getTime() + ONE_DAY * (taskEffectiveLength - 1))
+
+  return dependenciesToBeFixed.length ? (
+    <DependencyWarning
+      taskName={data.name}
+      taskEndDate={taskEndDate}
+      dependenciesToBeFixed={dependenciesToBeFixed}
+      onOk={() => {
+        dependenciesToBeFixed.forEach(dependency => {
+          const startDate = new Date(taskEndDate.getTime() + ONE_DAY)
+          const effectiveLength = calculateTaskLength(
+            {
+              ...dependency,
+              startDate,
+            },
+            hd,
+          )
+          const endDate = new Date(startDate.getTime() + ONE_DAY * (effectiveLength - 1))
+
+          updateTask({
+            ...dependency,
+            startDate,
+            endDate,
+            effectiveLength,
+          })
+        })
 
         if ('id' in data) {
           updateTask({
             ...data,
             ...values,
-            endDate,
-            effectiveLength,
+            endDate: taskEndDate,
+            effectiveLength: taskEffectiveLength,
             color: 'color' in data ? data.color : getRandomColor(),
           })
         } else {
           saveTask({
             ...data,
             ...values,
-            endDate,
-            effectiveLength,
+            endDate: taskEndDate,
+            effectiveLength: taskEffectiveLength,
+            color: getRandomColor(),
+          })
+        }
+
+        setDependenciesToBeFixed([])
+      }}
+    />
+  ) : (
+    <Form
+      data-testid="task-details-form"
+      onSubmit={ev => {
+        ev.preventDefault()
+        if ('id' in data) {
+          const dependenciesToBeFixed = taskEndsAfterDependantTasks(
+            data.id,
+            taskEndDate,
+            projectTasks,
+          )
+
+          if (dependenciesToBeFixed.length) {
+            setDependenciesToBeFixed(dependenciesToBeFixed)
+          } else {
+            updateTask({
+              ...data,
+              ...values,
+              endDate: taskEndDate,
+              effectiveLength: taskEffectiveLength,
+              color: 'color' in data ? data.color : getRandomColor(),
+            })
+          }
+        } else {
+          saveTask({
+            ...data,
+            ...values,
+            endDate: taskEndDate,
+            effectiveLength: taskEffectiveLength,
             color: getRandomColor(),
           })
         }
@@ -91,15 +158,10 @@ const TaskData = ({
         label="Start date"
         type="date"
         value={values.startDate.toISOString().split('T')[0]}
+        error={errors.startDate}
         onChange={ev => {
-          setValues({
-            ...values,
-            startDate: new Date(ev.currentTarget.value),
-          })
-        }}
-        required
-        validateOnBlur
-        validator={startDate => {
+          const startDate = new Date(ev.currentTarget.value)
+
           const nonEndedDependencies = getNonEndedDependencies(
             projectTasks,
             values.dependenciesId,
@@ -109,18 +171,25 @@ const TaskData = ({
           const errors = [
             isWeekend(startDate) && 'Start date cannot be a weekend day',
             hd.isHoliday(startDate) && 'Start date cannot be a holiday',
-            !!nonEndedDependencies.length &&
-              'A task cannot start before the tasks it depends on are ended',
+            !!nonEndedDependencies.length && INVALID_START_DATE_ERROR,
           ]
 
           const error = errors.find(error => typeof error === 'string') || ''
 
-          return error
+          setErrors(errors => ({
+            dependenciesId: !nonEndedDependencies.length ? '' : errors.dependenciesId,
+            startDate: error,
+          }))
+
+          setValues({
+            ...values,
+            startDate,
+          })
         }}
+        required
       />
       <Input
         label="Length"
-        name="length"
         type="number"
         value={values.length.toString()}
         onChange={ev => {
@@ -146,10 +215,36 @@ const TaskData = ({
         label="Dependencies"
         multiple
         value={values.dependenciesId.map(id => id.toString())}
+        error={errors.dependenciesId}
         onChange={ev => {
+          const dependenciesId = Array.from(ev.currentTarget.selectedOptions)
+            .filter(o => o.value !== '')
+            .map(o => Number(o.value))
+
+          const nonEndedDependencies = getNonEndedDependencies(
+            projectTasks,
+            dependenciesId,
+            values.startDate,
+          )
+
+          const error = nonEndedDependencies.length
+            ? nonEndedDependencies
+                .map(({ name }) => `${name} ends after the task starts`)
+                .join(', ')
+            : ''
+
+          setErrors({
+            startDate:
+              errors.startDate === INVALID_START_DATE_ERROR && !nonEndedDependencies.length
+                ? ''
+                : errors.startDate,
+
+            dependenciesId: error,
+          })
+
           setValues({
             ...values,
-            dependenciesId: Array.from(ev.currentTarget.selectedOptions).map(o => Number(o.value)),
+            dependenciesId,
           })
         }}
         options={[{ value: '', label: '' }].concat(
@@ -157,18 +252,6 @@ const TaskData = ({
             .filter(({ id }) => ('id' in data ? id !== data.id : true))
             .map(({ name, id }) => ({ value: id.toString(), label: name })),
         )}
-        validator={dependenciesId => {
-          const nonEndedDependencies = getNonEndedDependencies(
-            projectTasks,
-            Array.from(dependenciesId).map(id => Number(id)),
-            values.startDate,
-          )
-
-          return nonEndedDependencies.length
-            ? nonEndedDependencies.map(({ name }) => `${name} ends after the task start`).join(', ')
-            : ''
-        }}
-        validateOnBlur
       />
 
       <Buttons>
