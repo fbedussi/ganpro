@@ -165,12 +165,12 @@ const Tasks = () => {
   const [saveNewTask] = useAddTaskMutation()
   const [updateTask] = useUpdateTaskMutation()
 
-  return !project ? (
+  return !project || !tasks ? (
     <Progress />
   ) : (
     <_Tasks
       project={project}
-      tasks={tasks?.slice() || []}
+      tasks={tasks.slice()}
       saveNewTask={saveNewTask}
       updateTask={updateTask}
     />
