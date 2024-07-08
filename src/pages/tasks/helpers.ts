@@ -157,12 +157,16 @@ export const calculateDependencyStyle = (dependency: Dependency, days: Day[]) =>
   const gridColumnStart = days.indexOf(dependency.from.endDate) + 2
   const gridColumnEnd = days.indexOf(dependency.to.startDate) + 1
 
+  const minIndex = Math.min(dependency.from.index, dependency.to.index)
+  const maxIndex = Math.max(dependency.from.index, dependency.to.index)
+
   return {
-    gridRowStart: dependency.from.index + 1,
-    gridRowEnd: dependency.to.index + 2,
+    gridRowStart: minIndex + 1,
+    gridRowEnd: maxIndex + 2,
     gridColumnStart,
     gridColumnEnd,
     width: gridColumnStart === gridColumnEnd ? 0 : undefined,
+    transform: `scaleY(${minIndex === dependency.from.index ? 1 : -1})`,
   }
 }
 

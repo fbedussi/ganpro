@@ -505,6 +505,38 @@ describe('calculateDependencyStyle', () => {
       gridRowEnd: 3,
       gridColumnStart: 6,
       gridColumnEnd: 7,
+      transform: 'scaleY(1)',
+    })
+  })
+
+  it('returns the dependency style, when the dependency has a higher index than the dependant', () => {
+    const dependency: Dependency = {
+      from: {
+        id: 2,
+        index: 1,
+        endDate: '2024-04-05',
+      },
+      to: {
+        id: 3,
+        index: 0,
+        startDate: '2024-04-07',
+      },
+    }
+    const days = [
+      '2024-04-01',
+      '2024-04-02',
+      '2024-04-03',
+      '2024-04-04',
+      '2024-04-05',
+      '2024-04-06',
+      '2024-04-07',
+    ] as Day[]
+    expect(calculateDependencyStyle(dependency, days)).toEqual({
+      gridRowStart: 1,
+      gridRowEnd: 3,
+      gridColumnStart: 6,
+      gridColumnEnd: 7,
+      transform: 'scaleY(-1)',
     })
   })
 
@@ -536,6 +568,7 @@ describe('calculateDependencyStyle', () => {
       gridColumnStart: 6,
       gridColumnEnd: 6,
       width: 0,
+      transform: 'scaleY(1)',
     })
   })
 })
