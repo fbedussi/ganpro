@@ -7,6 +7,7 @@ import {
   getHolidaysClass,
   getMonthDays,
   getTasksMonths,
+  getTasksStartAndEndDates,
 } from './helpers'
 import styled, { css } from 'styled-components'
 import TaskBar from './TaskBar'
@@ -194,6 +195,8 @@ export const Calendar = ({
   const scrollElRef = useRef<HTMLDivElement>(null)
   const firstTaskRef = useRef<HTMLDivElement>(null)
 
+  const [startDate] = getTasksStartAndEndDates(tasks)
+
   useEffect(() => {
     if (scrollElRef.current && firstTaskRef.current) {
       const scrollRight = firstTaskRef.current.offsetLeft
@@ -241,7 +244,7 @@ export const Calendar = ({
           <Tasks>
             {tasks.map((task, index) => (
               <TaskBar
-                ref={index === 0 ? firstTaskRef : null}
+                ref={task.startDate.getTime() === startDate?.getTime() ? firstTaskRef : null}
                 key={task.id}
                 task={task}
                 taskIndex={index}
