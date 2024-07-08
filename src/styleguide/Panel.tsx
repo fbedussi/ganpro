@@ -8,36 +8,28 @@ const CloseButtonWrapper = styled.div`
   justify-content: end;
 `
 
-const FADE_IN_CLASS = 'in'
+const IN_CLASS = 'in'
 
 const DURATION = 150
 
 const Dialog = styled.dialog`
-  border-radius: 10px;
   background-color: white;
-  position: static;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: auto;
+  right: 0;
+  height: 100%;
   flex-direction: column;
   border: none;
   display: none;
   padding: 0;
+  transition: transform ${DURATION}ms;
+  display: flex;
+  transform: translate(100%, 0);
 
-  &&::backdrop {
-    background-color: rgba(3, 20, 52, 0.3);
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-  }
-
-  &[open],
-  &[open]::backdrop {
-    display: flex;
-    opacity: 0;
-    transition: opacity ${DURATION}ms;
-  }
-
-  &[open].${FADE_IN_CLASS}, &[open].${FADE_IN_CLASS}::backdrop {
-    opacity: 1;
+  &[open].${IN_CLASS} {
+    transform: translate(0, 0);
   }
 `
 
@@ -49,17 +41,15 @@ const Content = styled.div`
   gap: 1rem;
 `
 
-const Modal = ({
+const Panel = ({
   id,
   isOpen,
   onRequestClose,
-  closeOnBackdropClick,
   children,
 }: {
   id?: string
   isOpen: boolean
   onRequestClose: () => void
-  closeOnBackdropClick?: boolean
   children: React.ReactNode
 }) => {
   const dialogRef = useRef<
@@ -73,14 +63,14 @@ const Modal = ({
   >(null)
 
   const close = useCallback(() => {
-    dialogRef.current?.classList.remove(FADE_IN_CLASS)
+    dialogRef.current?.classList.remove(IN_CLASS)
 
     // it is possible to use dialogRef.current.addEventListener('transitionend')
     // to close the modal after the fade out is completed,
     // but I feel safer with a setTimeout that executes only once and I'm sure is triggered
     // always at the right moment
     setTimeout(() => {
-      dialogRef.current?.classList.remove(FADE_IN_CLASS)
+      dialogRef.current?.classList.remove(IN_CLASS)
 
       if (dialogRef.current?.open) {
         dialogRef.current?.close()
@@ -100,9 +90,9 @@ const Modal = ({
       // This is a key instruction, to behave like a modal, with the backdrop and all the rest
       // the dialog element must be open with the showModal method
       // the show method opens it more like a notification
-      !dialogRef.current?.open && dialogRef.current?.showModal()
-      dialogRef.current?.classList.add(FADE_IN_CLASS)
-    } else if (dialogRef.current?.classList.contains(FADE_IN_CLASS)) {
+      !dialogRef.current?.open && dialogRef.current?.show()
+      dialogRef.current?.classList.add(IN_CLASS)
+    } else if (dialogRef.current?.classList.contains(IN_CLASS)) {
       close()
     }
   }, [isOpen, close])
@@ -112,7 +102,7 @@ const Modal = ({
       id={id}
       ref={dialogRef}
       onClick={e => {
-        if (!dialogRef.current || !closeOnBackdropClick) {
+        if (!dialogRef.current) {
           return
         }
 
@@ -126,7 +116,7 @@ const Modal = ({
     >
       <Content>
         <CloseButtonWrapper>
-          <button data-testid="modal-close-button" className="outline" onClick={close}>
+          <button data-testid="panel-close-button" className="outline" onClick={close}>
             <CloseIcon />
           </button>
         </CloseButtonWrapper>
@@ -136,4 +126,4 @@ const Modal = ({
   )
 }
 
-export default Modal
+export default Panel

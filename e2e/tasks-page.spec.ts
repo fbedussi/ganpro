@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import { addTask } from './helpers'
 
 test.beforeEach(async ({ page }) => {
   const proj1 = 'proj1'
@@ -10,31 +11,6 @@ test.beforeEach(async ({ page }) => {
 
   await page.getByText(proj1).click()
 })
-
-const addTask = async (
-  page: Page,
-  {
-    name,
-    startDate,
-    length,
-    assignee,
-    dependency,
-  }: { name: string; startDate: string; length: string; assignee: string; dependency?: string },
-) => {
-  await page.getByTestId('new-task-input').fill(name)
-  await page.getByTestId('add-task-btn').click()
-  await expect(page.getByRole('dialog')).toBeVisible()
-
-  await page.getByLabel(/start date/i).fill(startDate)
-  await page.getByLabel(/length/i).fill(length)
-  await page.getByLabel(/assignee/i).fill(assignee)
-
-  if (dependency) {
-    await page.getByLabel(/dependencies/i).selectOption(dependency)
-  }
-
-  await page.click('button[type="submit"]')
-}
 
 test.describe('Add a task to a project', () => {
   test('Adds a task', async ({ page }) => {
@@ -106,7 +82,7 @@ test.describe('Open Task details', () => {
     await page.getByTestId('task-task1').click()
     await expect(page.getByTestId('task-details-form')).toBeVisible()
 
-    await page.getByTestId('modal-close-button').click()
+    await page.locator('#task-data [data-testid="modal-close-button"]').click()
     await expect(page.getByTestId('task-details-form')).not.toBeVisible()
 
     await page.getByTestId('task-task1').click()

@@ -15,6 +15,9 @@ import Calendar from './Calendar'
 import Header from '../../components/Header'
 import styled from 'styled-components'
 import { ChevronLeft } from '../../styleguide/icons/ChevronLeft'
+import { AnalyticsIcon } from '../../styleguide/icons/Analytics'
+import { Analytics } from './Analytics'
+import Panel from '../../styleguide/Panel'
 
 const Main = styled.main`
   display: flex;
@@ -53,6 +56,7 @@ export const _Tasks = ({
 }) => {
   const [disableAddTaskBtn, setDisableAddTaskBtn] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false)
   const [newTaskName, setNewTaskName] = useState('')
 
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined)
@@ -70,6 +74,14 @@ export const _Tasks = ({
           </Link>
         }
         title={`${project.name} tasks`}
+        post={
+          <button
+            data-testid="analytics-button"
+            onClick={() => setIsAnalyticsOpen(!isAnalyticsOpen)}
+          >
+            <AnalyticsIcon />
+          </button>
+        }
       />
 
       <Main className="container">
@@ -101,6 +113,7 @@ export const _Tasks = ({
       </Main>
 
       <Modal
+        id="task-data"
         isOpen={isModalOpen}
         onRequestClose={() => {
           setIsModalOpen(false)
@@ -131,6 +144,16 @@ export const _Tasks = ({
           }}
         />
       </Modal>
+
+      <Panel
+        id="analytics"
+        isOpen={isAnalyticsOpen}
+        onRequestClose={() => {
+          setIsAnalyticsOpen(false)
+        }}
+      >
+        <Analytics project={project} tasks={tasks} />
+      </Panel>
     </>
   )
 }

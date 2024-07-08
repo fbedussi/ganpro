@@ -19,6 +19,7 @@ describe('TaskData', () => {
     expect(screen.getByLabelText(/start date/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/length/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/assignee/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/completed/i)).toBeInTheDocument()
     expect(screen.getByRole('listbox', { name: /dependencies/i })).toBeInTheDocument()
   })
 
@@ -127,6 +128,7 @@ describe('TaskData', () => {
     await user.type(screen.getByLabelText(/assignee/i), 'foo')
     await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '1')
     await user.selectOptions(screen.getByRole('listbox', { name: /dependencies/i }), '2')
+    await user.click(screen.getByLabelText(/completed/i))
     await user.click(screen.getByRole('button', { name: /save/i }))
     expect(saveTask).toHaveBeenCalledWith({
       name: 'task3',
@@ -138,6 +140,7 @@ describe('TaskData', () => {
       assignee: 'foo',
       dependenciesId: [1, 2],
       color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
+      completed: 100,
     })
   })
 
@@ -181,24 +184,24 @@ describe('TaskData', () => {
       assignee: 'foo',
       dependenciesId: [],
       color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
+      completed: 0,
     })
   })
 
   it('saves the task, calculating the end date considering weekends and holidays', async () => {
     const user = userEvent.setup()
 
+    const task = mockTask({
+      name: 'task1',
+      id: 1,
+      projId: 1,
+      endDate: new Date('2024-04-02'),
+    })
     const saveTask = jest.fn()
     render(
       <TaskData
         data={{ name: 'task1', projId: 1 }}
-        projectTasks={[
-          mockTask({
-            name: 'task1',
-            id: 1,
-            projId: 1,
-            endDate: new Date('2024-04-02'),
-          }),
-        ]}
+        projectTasks={[task]}
         saveTask={saveTask}
         updateTask={() => {}}
       />,
@@ -220,6 +223,7 @@ describe('TaskData', () => {
       assignee: 'foo',
       dependenciesId: [1],
       color: expect.stringMatching(/rgb\(\d{1,3}, \d{1,3}, \d{1,3}\)/),
+      completed: task.completed,
     })
   })
 
@@ -366,6 +370,7 @@ describe('TaskData', () => {
     await user.click(screen.getByRole('button', { name: /save/i }))
 
     expect(updateTask).toHaveBeenCalledWith({
+      ...task,
       id: 1,
       name: 'task1',
       projId: 1,

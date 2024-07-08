@@ -11,6 +11,7 @@ export type Task = {
   assignee: string
   dependenciesId: number[]
   color: string
+  completed: number
 }
 
 export type Dependency = {

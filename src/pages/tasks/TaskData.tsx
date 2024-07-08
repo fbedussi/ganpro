@@ -19,11 +19,6 @@ const Form = styled.form`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-
-  input,
-  select {
-    width: 100%;
-  }
 `
 
 const Buttons = styled.div`
@@ -51,6 +46,7 @@ const TaskData = ({
     length: 'length' in data ? data.length : 1,
     assignee: 'assignee' in data ? data.assignee : '',
     dependenciesId: 'dependenciesId' in data ? data.dependenciesId : [],
+    completed: 'completed' in data ? data.completed : 0,
   })
 
   const [errors, setErrors] = useState({
@@ -252,6 +248,18 @@ const TaskData = ({
             .filter(({ id }) => ('id' in data ? id !== data.id : true))
             .map(({ name, id }) => ({ value: id.toString(), label: name })),
         )}
+      />
+
+      <Input
+        type="checkbox"
+        label="Completed"
+        checked={values.completed === 100}
+        onChange={ev => {
+          setValues({
+            ...values,
+            completed: ev.currentTarget.checked ? 100 : 0,
+          })
+        }}
       />
 
       <Buttons>

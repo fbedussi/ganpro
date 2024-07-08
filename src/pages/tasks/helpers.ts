@@ -64,11 +64,7 @@ export const getTasksStartAndEndDates = (tasks: Task[]) => {
     : undefined
 
   const endTimestamp = tasks.length
-    ? tasks
-        .map(task => {
-          return new Date(task.startDate.getTime() + ONE_DAY * (task.effectiveLength - 1)).getTime()
-        })
-        .sort((a, b) => b - a)[0]
+    ? tasks.sort((t1, t2) => t2.endDate.getTime() - t1.endDate.getTime())[0].endDate
     : undefined
 
   return [startDate, endTimestamp !== undefined ? new Date(endTimestamp) : undefined]
@@ -198,4 +194,10 @@ export const taskEndsAfterDependantTasks = (taskId: Id, endDate: Date, projectTa
       dependenciesId.includes(taskId) && startDate.getTime() <= endDate.getTime(),
   )
   return a
+}
+
+export const getPercentageDone = (tasks: Task[]): number => {
+  return Math.round(
+    (tasks.filter(({ completed }) => completed === 100).length / tasks.length) * 100,
+  )
 }

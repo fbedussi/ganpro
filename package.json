@@ -12,6 +12,7 @@
     "test:watch": "jest --watchAll=true",
     "test:cov": "jest --coverage",
     "e2e": "npx playwright test",
+    "e2e:dev": "npx playwright test --project webkit --ui",
     "preview": "vite preview"
   },
   "dependencies": {

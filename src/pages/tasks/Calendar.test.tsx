@@ -2,6 +2,7 @@ import React from 'react'
 import { getByText, render, screen } from '../../test-utils'
 import Calendar from './Calendar'
 import { Task } from '../../model'
+import { mockTask } from '../../mocks/task'
 
 describe('calendar', () => {
   it('shows the current day if there are no tasks', () => {
@@ -20,7 +21,7 @@ describe('calendar', () => {
 
   it('shows the day of the earlier task', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -31,8 +32,8 @@ describe('calendar', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task2',
@@ -43,7 +44,7 @@ describe('calendar', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
-      },
+      }),
     ]
 
     render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
@@ -53,7 +54,7 @@ describe('calendar', () => {
 
   it('shows the name of the month of the earlier task', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -64,8 +65,8 @@ describe('calendar', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task2',
@@ -76,7 +77,7 @@ describe('calendar', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
-      },
+      }),
     ]
 
     render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
@@ -86,7 +87,7 @@ describe('calendar', () => {
 
   it('shows the full month for every task', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -97,8 +98,8 @@ describe('calendar', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task1',
@@ -109,7 +110,7 @@ describe('calendar', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
+      }),
     ]
 
     render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
@@ -124,7 +125,7 @@ describe('calendar', () => {
 
   test('non working days are visually marked', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -135,7 +136,7 @@ describe('calendar', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
+      }),
     ]
 
     render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
@@ -149,7 +150,7 @@ describe('calendar', () => {
 describe('taskbars', () => {
   test('there is a taskbar for every task', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -160,8 +161,8 @@ describe('taskbars', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task2',
@@ -172,7 +173,7 @@ describe('taskbars', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
-      },
+      }),
     ]
 
     render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
@@ -185,7 +186,7 @@ describe('taskbars', () => {
 describe('dependencies', () => {
   it('shows dependencies', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -196,8 +197,8 @@ describe('dependencies', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task2',
@@ -208,7 +209,7 @@ describe('dependencies', () => {
         assignee: 'me',
         dependenciesId: [1],
         color: 'green',
-      },
+      }),
     ]
 
     render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
