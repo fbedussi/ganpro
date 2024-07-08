@@ -1,5 +1,12 @@
 import React, { useEffect, useRef } from 'react'
 import { HTMLProps } from 'react'
+import styled from 'styled-components'
+
+const Label = styled.label`
+  select {
+    width: 100%;
+  }
+`
 
 export const Select = ({
   label,
@@ -19,7 +26,7 @@ export const Select = ({
   }, [error])
 
   return (
-    <label>
+    <Label>
       {!!label && <span>{label}</span>}
       <select {...props} ref={ref}>
         {options.map(({ value, label }) => (
@@ -28,6 +35,6 @@ export const Select = ({
           </option>
         ))}
       </select>
-    </label>
+    </Label>
   )
 }

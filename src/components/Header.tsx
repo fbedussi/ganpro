@@ -14,13 +14,18 @@ const Wrapper = styled.header`
     text-align: center;
     flex: 1;
   }
+
+  > *:last-child {
+    place-self: center end;
+  }
 `
 
-const Header = ({ title, pre }: { title: string; pre?: JSX.Element }) => {
+const Header = ({ title, pre, post }: { title: string; pre?: JSX.Element; post?: JSX.Element }) => {
   return (
     <Wrapper className="container">
       {pre}
       <h1>{title}</h1>
+      {post}
     </Wrapper>
   )
 }

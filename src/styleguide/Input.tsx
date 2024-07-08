@@ -10,6 +10,15 @@ const Label = styled.label`
   input:invalid {
     border-color: var(--pico-form-element-invalid-active-border-color);
   }
+
+  input:not([type='checkbox']) {
+    width: 100%;
+  }
+
+  &:has(input[type='checkbox']) {
+    gap: 1rem;
+    display: flex;
+  }
 `
 
 export const Input = ({

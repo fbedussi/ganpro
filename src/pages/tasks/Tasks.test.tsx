@@ -5,6 +5,7 @@ import { Project } from '../../model/project'
 import { _Tasks } from './Tasks'
 import { Task } from '../../model/task'
 import React from 'react'
+import { mockTask } from '../../mocks/task'
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = jest.fn(function mock(this: HTMLDialogElement) {
@@ -19,30 +20,18 @@ describe('tasks page', () => {
   }
 
   const tasks: Task[] = [
-    {
-      id: 1,
-      projId: 1,
+    mockTask({
       name: 'task1',
-      startDate: new Date(),
-      endDate: new Date(),
+      assignee: 'me',
+      startDate: new Date('2024-04-08'),
       length: 1,
-      effectiveLength: 1,
-      assignee: 'me',
-      dependenciesId: [],
-      color: 'red',
-    },
-    {
-      id: 2,
-      projId: 1,
+    }),
+    mockTask({
       name: 'task2',
-      startDate: new Date(),
-      endDate: new Date(),
-      length: 2,
-      effectiveLength: 2,
       assignee: 'me',
-      dependenciesId: [],
-      color: 'green',
-    },
+      startDate: new Date('2024-04-08'),
+      length: 2,
+    }),
   ]
 
   it('displays the title', () => {
@@ -52,7 +41,7 @@ describe('tasks page', () => {
 
   it('displays the project name', () => {
     render(<_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />)
-    expect(screen.getByText(new RegExp(project.name, 'i'))).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: new RegExp(project.name, 'i') })).toBeVisible()
   })
 
   it('displays the tasks', () => {
@@ -157,6 +146,25 @@ describe('tasks page', () => {
       )
       await user.click(screen.getByTestId(`task-${tasks[0].name}`))
       expect(screen.getByTestId('task-details-form')).toBeVisible()
+    })
+  })
+
+  describe('project analytics', () => {
+    it('has an analytics button', () => {
+      render(
+        <_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />,
+      )
+      expect(screen.getByTestId('analytics-button')).toBeVisible()
+    })
+
+    it('opens the project analytics', async () => {
+      const { user } = render(
+        <_Tasks project={project} tasks={tasks} saveNewTask={jest.fn()} updateTask={() => {}} />,
+      )
+
+      await user.click(screen.getByTestId('analytics-button'))
+
+      expect(screen.getByTestId('analytics')).toBeVisible()
     })
   })
 })

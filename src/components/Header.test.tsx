@@ -7,4 +7,14 @@ describe('Header', () => {
     render(<Header title="foo" />)
     expect(screen.getByText('foo')).toBeInTheDocument()
   })
+
+  it('displays the pre element', () => {
+    render(<Header title="foo" pre={<div data-testid="pre" />} />)
+    expect(screen.getByTestId('pre')).toBeInTheDocument()
+  })
+
+  it('displays the post element', () => {
+    render(<Header title="foo" post={<div data-testid="post" />} />)
+    expect(screen.getByTestId('post')).toBeInTheDocument()
+  })
 })

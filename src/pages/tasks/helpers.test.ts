@@ -11,12 +11,14 @@ import {
   getMonthEnd,
   getMonthStart,
   getNonEndedDependencies,
+  getPercentageDone,
   getRandomColor,
   getTasksMonths,
   getTasksStartAndEndDates,
   isWeekend,
   taskEndsAfterDependantTasks,
 } from './helpers'
+import { mockTask } from '../../mocks/task'
 
 const hd = new Holidays()
 hd.init('IT')
@@ -90,7 +92,12 @@ describe('getTasksStartAndEndDates', () => {
     it('returns the same day if length is 1', () => {
       expect(
         getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
+          {
+            startDate: new Date('2024-04-04'),
+            length: 1,
+            endDate: new Date('2024-04-04'),
+            effectiveLength: 1,
+          } as Task,
         ]),
       ).toEqual([new Date('2024-04-04'), new Date('2024-04-04')])
     })
@@ -98,25 +105,14 @@ describe('getTasksStartAndEndDates', () => {
     it('returns the right end date if length is more than 1', () => {
       expect(
         getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-01'), length: 3, effectiveLength: 3 } as Task,
+          {
+            startDate: new Date('2024-04-01'),
+            length: 3,
+            endDate: new Date('2024-04-03'),
+            effectiveLength: 3,
+          } as Task,
         ]),
       ).toEqual([new Date('2024-04-01'), new Date('2024-04-03')])
-    })
-
-    it('returns the right end date considering weekends', () => {
-      expect(
-        getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-04'), length: 3, effectiveLength: 5 } as Task,
-        ]),
-      ).toEqual([new Date('2024-04-04'), new Date('2024-04-08')])
-    })
-
-    it('returns the right end date considering weekends and holydays', () => {
-      expect(
-        getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-24'), length: 3, effectiveLength: 6 } as Task,
-        ]),
-      ).toEqual([new Date('2024-04-24'), new Date('2024-04-29')])
     })
   })
 
@@ -124,8 +120,18 @@ describe('getTasksStartAndEndDates', () => {
     it('returns the same day if length is 1', () => {
       expect(
         getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
-          { startDate: new Date('2024-05-06'), length: 1, effectiveLength: 1 } as Task,
+          {
+            startDate: new Date('2024-04-04'),
+            length: 1,
+            endDate: new Date('2024-04-04'),
+            effectiveLength: 1,
+          } as Task,
+          {
+            startDate: new Date('2024-05-06'),
+            length: 1,
+            endDate: new Date('2024-05-06'),
+            effectiveLength: 1,
+          } as Task,
         ]),
       ).toEqual([new Date('2024-04-04'), new Date('2024-05-06')])
     })
@@ -133,35 +139,37 @@ describe('getTasksStartAndEndDates', () => {
     it('returns the right end date if length is more than 1', () => {
       expect(
         getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-01'), length: 3, effectiveLength: 3 } as Task,
-          { startDate: new Date('2024-04-02'), length: 3, effectiveLength: 3 } as Task,
+          {
+            startDate: new Date('2024-04-01'),
+            length: 3,
+            endDate: new Date('2024-04-03'),
+            effectiveLength: 3,
+          } as Task,
+          {
+            startDate: new Date('2024-04-02'),
+            length: 3,
+            endDate: new Date('2024-04-04'),
+            effectiveLength: 3,
+          } as Task,
         ]),
       ).toEqual([new Date('2024-04-01'), new Date('2024-04-04')])
-    })
-
-    it('returns the right end date considering weekends', () => {
-      expect(
-        getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-04'), length: 3, effectiveLength: 5 } as Task,
-          { startDate: new Date('2024-04-05'), length: 3, effectiveLength: 5 } as Task,
-        ]),
-      ).toEqual([new Date('2024-04-04'), new Date('2024-04-09')])
-    })
-
-    it('returns the right end date considering weekends and holydays', () => {
-      expect(
-        getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-23'), length: 3, effectiveLength: 7 } as Task,
-          { startDate: new Date('2024-04-24'), length: 3, effectiveLength: 6 } as Task,
-        ]),
-      ).toEqual([new Date('2024-04-23'), new Date('2024-04-29')])
     })
 
     it('returns the right end date even if the first task ends after the second', () => {
       expect(
         getTasksStartAndEndDates([
-          { startDate: new Date('2024-04-22'), length: 10, effectiveLength: 16 } as Task,
-          { startDate: new Date('2024-04-24'), length: 3, effectiveLength: 6 } as Task,
+          {
+            startDate: new Date('2024-04-22'),
+            length: 10,
+            endDate: new Date('2024-05-07'),
+            effectiveLength: 16,
+          } as Task,
+          {
+            startDate: new Date('2024-04-24'),
+            length: 3,
+            endDate: new Date('2024-04-29'),
+            effectiveLength: 6,
+          } as Task,
         ]),
       ).toEqual([new Date('2024-04-22'), new Date('2024-05-07')])
     })
@@ -242,7 +250,12 @@ describe('getTasksMonths', () => {
   it('returns the month of a task', () => {
     expect(
       getTasksMonths([
-        { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
+        {
+          startDate: new Date('2024-04-04'),
+          length: 1,
+          endDate: new Date('2024-04-04'),
+          effectiveLength: 1,
+        } as Task,
       ]),
     ).toEqual(['2024-04'])
   })
@@ -250,8 +263,18 @@ describe('getTasksMonths', () => {
   it('returns the months of multiple tasks', () => {
     expect(
       getTasksMonths([
-        { startDate: new Date('2024-04-04'), length: 1, effectiveLength: 1 } as Task,
-        { startDate: new Date('2024-05-04'), length: 1, effectiveLength: 1 } as Task,
+        {
+          startDate: new Date('2024-04-04'),
+          length: 1,
+          endDate: new Date('2024-04-04'),
+          effectiveLength: 1,
+        } as Task,
+        {
+          startDate: new Date('2024-05-04'),
+          length: 1,
+          endDate: new Date('2024-05-04'),
+          effectiveLength: 1,
+        } as Task,
       ]),
     ).toEqual(['2024-04', '2024-05'])
   })
@@ -259,8 +282,18 @@ describe('getTasksMonths', () => {
   it('considers also the end date of a task', () => {
     expect(
       getTasksMonths([
-        { startDate: new Date('2024-11-04'), length: 1, effectiveLength: 1 } as Task,
-        { startDate: new Date('2025-05-15'), length: 16, effectiveLength: 22 } as Task,
+        {
+          startDate: new Date('2024-11-04'),
+          length: 1,
+          endDate: new Date('2024-11-04'),
+          effectiveLength: 1,
+        } as Task,
+        {
+          startDate: new Date('2025-05-15'),
+          length: 16,
+          endDate: new Date('2025-06-06'),
+          effectiveLength: 22,
+        } as Task,
       ]),
     ).toEqual([
       '2024-11',
@@ -278,7 +311,7 @@ describe('getTasksMonths', () => {
 describe('getDependencies', () => {
   it('extract dependencies from tasks/1', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -289,8 +322,8 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task2',
@@ -301,7 +334,7 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [1],
         color: 'green',
-      },
+      }),
     ]
 
     expect(getDependencies(tasks)).toEqual([
@@ -322,7 +355,7 @@ describe('getDependencies', () => {
 
   it('extract dependencies from tasks/2', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -333,8 +366,8 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task2',
@@ -345,8 +378,8 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [1],
         color: 'green',
-      },
-      {
+      }),
+      mockTask({
         id: 3,
         projId: 1,
         name: 'task2',
@@ -357,7 +390,7 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [1, 2],
         color: 'green',
-      },
+      }),
     ]
 
     expect(getDependencies(tasks)).toEqual([
@@ -402,7 +435,7 @@ describe('getDependencies', () => {
 
   it('return an empty array if there are no dependencies', () => {
     const tasks: Task[] = [
-      {
+      mockTask({
         id: 1,
         projId: 1,
         name: 'task1',
@@ -413,8 +446,8 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'red',
-      },
-      {
+      }),
+      mockTask({
         id: 2,
         projId: 1,
         name: 'task2',
@@ -425,8 +458,8 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
-      },
-      {
+      }),
+      mockTask({
         id: 3,
         projId: 1,
         name: 'task2',
@@ -437,7 +470,7 @@ describe('getDependencies', () => {
         assignee: 'me',
         dependenciesId: [],
         color: 'green',
-      },
+      }),
     ]
 
     expect(getDependencies(tasks)).toEqual([])
@@ -705,5 +738,17 @@ describe('taskEndsAfterDependantTasks', () => {
       { id: 2, startDate: new Date('2024-04-01'), dependenciesId: [] as Id[] } as Task,
     ]
     expect(taskEndsAfterDependantTasks(3, new Date('2024-04-02'), tasks)).toEqual([])
+  })
+})
+
+describe('getPercentageDone', () => {
+  it('works', () => {
+    expect(
+      getPercentageDone([
+        mockTask({ completed: 100 }),
+        mockTask({ completed: 0 }),
+        mockTask({ completed: 0 }),
+      ]),
+    ).toBe(33)
   })
 })
