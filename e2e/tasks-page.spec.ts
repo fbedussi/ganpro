@@ -197,3 +197,23 @@ test.describe('auto move dependent task', () => {
     await expect(page.getByTestId('dependency-warning')).toBeVisible()
   })
 })
+
+test('delete a task', async ({ page }) => {
+  const task1 = {
+    name: 'task1',
+    startDate: '2024-04-08',
+    length: '1',
+    assignee: 'foo',
+  }
+  await addTask(page, task1)
+
+  await expect(page.getByTestId('task-task1')).toBeVisible()
+
+  await page.getByTestId('delete-task-btn').click()
+
+  await expect(page.getByTestId('confirm-delete-task-modal')).toBeVisible()
+
+  await page.getByTestId('ok-btn').click()
+
+  await expect(page.getByTestId('task-task1')).not.toBeVisible()
+})

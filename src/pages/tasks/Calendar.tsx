@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Task } from '../../model'
 import {
   calculateDependencyStyle,
@@ -11,6 +11,14 @@ import {
 } from './helpers'
 import styled, { css } from 'styled-components'
 import TaskBar from './TaskBar'
+import { DeleteIcon } from '../../styleguide/icons/DeleteIcon'
+import Modal from '../../styleguide/Modal'
+import ConfirmDeleteTaskModal from './CondirmDeleteTaskModal'
+
+const TaskRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
 
 const Container = styled.div`
   --col-width: 3rem;
@@ -167,6 +175,8 @@ export const Calendar = ({
   tasks: Task[]
   setSelectedTask: (task: Task) => void
 }) => {
+  const [taskToDelete, setTaskToDelete] = useState<Task>()
+
   const startDateFull = tasks.length
     ? tasks.slice().sort((a, b) => a.startDate.getTime() - b.startDate.getTime())[0].startDate
     : new Date()
@@ -208,15 +218,23 @@ export const Calendar = ({
 
   return (
     <Container data-testid="calendar">
+      <Modal isOpen={!!taskToDelete} onRequestClose={() => setTaskToDelete(undefined)}>
+        <ConfirmDeleteTaskModal
+          taskToDelete={taskToDelete}
+          onAbort={() => setTaskToDelete(undefined)}
+        />
+      </Modal>
+
       <TaskList>
         {tasks.map(task => (
-          <button
-            key={task.id}
-            data-testid={`task-${task.name}`}
-            onClick={() => setSelectedTask(task)}
-          >
-            {task.name}
-          </button>
+          <TaskRow key={task.id}>
+            <button data-testid={`task-${task.name}`} onClick={() => setSelectedTask(task)}>
+              {task.name}
+            </button>
+            <button data-testid="delete-task-btn" onClick={() => setTaskToDelete(task)}>
+              <DeleteIcon />
+            </button>
+          </TaskRow>
         ))}
       </TaskList>
 
