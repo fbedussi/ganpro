@@ -1,5 +1,6 @@
 import React from 'react'
 import { getByText, render, screen } from '../../test-utils'
+import 'fake-indexeddb/auto'
 import Calendar from './Calendar'
 import { Task } from '../../model'
 import { mockTask } from '../../mocks/task'
@@ -215,5 +216,59 @@ describe('dependencies', () => {
     render(<Calendar tasks={tasks} setSelectedTask={() => {}} />)
 
     expect(screen.getByTestId('dependency-1->2')).toBeInTheDocument()
+  })
+
+  describe('delete a task', () => {
+    test('there is a delete task button', () => {
+      render(
+        <Calendar
+          tasks={[
+            mockTask({
+              id: 1,
+              projId: 1,
+              name: 'task1',
+              startDate: new Date('2024-04-04'),
+              endDate: new Date('2024-04-04'),
+              length: 1,
+              effectiveLength: 1,
+              assignee: 'me',
+              dependenciesId: [],
+              color: 'red',
+            }),
+          ]}
+          setSelectedTask={() => {}}
+        />,
+      )
+
+      expect(screen.getByTestId('delete-task-btn')).toBeInTheDocument()
+    })
+
+    test('the delete task button opens a confirmation dialog', async () => {
+      const { user } = render(
+        <Calendar
+          tasks={[
+            mockTask({
+              id: 1,
+              projId: 1,
+              name: 'task1',
+              startDate: new Date('2024-04-04'),
+              endDate: new Date('2024-04-04'),
+              length: 1,
+              effectiveLength: 1,
+              assignee: 'me',
+              dependenciesId: [],
+              color: 'red',
+            }),
+          ]}
+          setSelectedTask={() => {}}
+        />,
+      )
+
+      expect(await screen.queryByTestId('confirm-delete-task-modal')).not.toBeInTheDocument()
+
+      await user.click(screen.getByTestId('delete-task-btn'))
+
+      expect(screen.getByTestId('confirm-delete-task-modal')).toBeInTheDocument()
+    })
   })
 })
